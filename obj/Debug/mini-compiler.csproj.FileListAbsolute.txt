@@ -1,0 +1,14 @@
+\\Mac\Home\Desktop\brodka++\mini-compiler\bin\Debug\mini-compiler.exe
+\\Mac\Home\Desktop\brodka++\mini-compiler\bin\Debug\mini-compiler.pdb
+\\Mac\Home\Desktop\brodka++\mini-compiler\obj\Debug\mini-compiler.csprojAssemblyReference.cache
+\\Mac\Home\Desktop\brodka++\mini-compiler\obj\Debug\mini-compiler.csproj.CoreCompileInputs.cache
+\\Mac\Home\Desktop\brodka++\mini-compiler\obj\Debug\mini-compiler.exe
+\\Mac\Home\Desktop\brodka++\mini-compiler\obj\Debug\mini-compiler.pdb
+C:\Users\polinagrinko\Desktop\mini-compiler\obj\Debug\mini-compiler.csprojAssemblyReference.cache
+C:\Users\polinagrinko\Desktop\mini-compiler\obj\Debug\mini-compiler.csproj.CoreCompileInputs.cache
+C:\Users\polinagrinko\Desktop\mini-compiler\obj\Debug\mini-compiler.exe
+C:\Users\polinagrinko\Desktop\mini-compiler\obj\Debug\mini-compiler.pdb
+C:\Users\polinagrinko\Desktop\mini-compiler\bin\Debug\mini-compiler.exe
+C:\Users\polinagrinko\Desktop\mini-compiler\bin\Debug\mini-compiler.pdb
+C:\Users\polinagrinko\Desktop\mini-compiler\bin\Debug\QUT.ShiftReduceParser.dll
+C:\Users\polinagrinko\Desktop\mini-compiler\obj\Debug\mini-compiler.csproj.CopyComplete
