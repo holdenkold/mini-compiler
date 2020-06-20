@@ -4,9 +4,9 @@
 
 // GPPG version 1.5.2
 // Machine:  POLINAGRINK1DDB
-// DateTime: 6/20/2020 8:51:26 PM
+// DateTime: 6/20/2020 9:12:13 PM
 // UserName: polinagrinko
-// Input file <parser.y - 6/20/2020 8:32:29 PM>
+// Input file <parser.y - 6/20/2020 9:11:55 PM>
 
 // options: lines gplex
 
@@ -211,7 +211,7 @@ public class Parser: ShiftReduceParser<ValueType, LexLocation>
         break;
       case 9: // statement -> Ident, "=", expression, ";"
 #line 49 "parser.y"
-                            { var nd = new LeafNode(ValueStack[ValueStack.Depth-2].val); CurrentSemanticValue.node = new Assign(ValueStack[ValueStack.Depth-4].val, nd.Evaluate()); Console.WriteLine(ValueStack[ValueStack.Depth-4].val); Console.WriteLine("="); Console.WriteLine(nd.Evaluate()); Console.WriteLine("\n");}
+                            {var nd = new LeafNode(ValueStack[ValueStack.Depth-2].val); CurrentSemanticValue.node = new Assign(ValueStack[ValueStack.Depth-4].val, nd.Evaluate()); Console.WriteLine(ValueStack[ValueStack.Depth-4].val); Console.WriteLine("="); Console.WriteLine(nd.Evaluate()); Console.WriteLine("\n");}
 #line default
         break;
       case 17: // types -> Int

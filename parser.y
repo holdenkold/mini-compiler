@@ -46,7 +46,7 @@ statement_list
 	;
 
 statement
-	: Ident "=" expression ";" { var nd = new LeafNode($3.val); $$ = new Assign($1, nd.Evaluate()); Console.WriteLine($1); Console.WriteLine("="); Console.WriteLine(nd.Evaluate()); Console.WriteLine("\n");}
+	: Ident "=" expression ";" {var nd = new LeafNode($3.val); $$ = new Assign($1, nd.Evaluate()); Console.WriteLine($1); Console.WriteLine("="); Console.WriteLine(nd.Evaluate()); Console.WriteLine("\n");}
 	| "{" statement_list "}"
 	| expression ";"
 	|  Return ";"

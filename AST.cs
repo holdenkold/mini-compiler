@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Data;
 using System.IO;
+using System.Linq;
 using System.Xml.Schema;
 
 namespace mini_compiler
@@ -60,7 +61,15 @@ namespace mini_compiler
 
         public override void GenCode()
         {
-            Compiler.EmitCode($"ldc.r4 {right_value}");
+            if (right_value.All(Char.IsDigit)) // case when int/double/bool provided
+            {
+                Compiler.EmitCode($"ldc.r4 {right_value}");
+            }
+            else // case when variable name provided
+            {
+                Compiler.EmitCode($"ldloc {right_value}");
+            }
+
             Compiler.EmitCode($"stloc {left_ident}");
         }
     }
