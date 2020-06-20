@@ -74,7 +74,27 @@ namespace mini_compiler
         }
     }
 
-   
+    public class Write : AST
+    {
+        string value;
+        public Write(string value) => this.value = value;
+
+        public override void GenCode()
+        {
+            if (value.All(Char.IsDigit)) // case when int/double/bool provided
+            {
+
+       
+                Compiler.EmitCode($"ldc.r4 {value}");
+            }
+            else // case when variable name provided
+            {
+                Compiler.EmitCode($"ldloc {value}");
+            }
+            Compiler.EmitCode($"call void [System.Console]System.Console::Write(int32)");
+        }
+    }
+
 }
 
 

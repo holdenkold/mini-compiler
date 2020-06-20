@@ -52,6 +52,8 @@ statement
 	|  Return ";"
 	| If "(" expression ")" "{" statement_list "}"
 	| While "(" expression ")" "{" statement_list "}"
+	| Write values ";" {$$ = new Write($1.val); }
+	| Write String ";" {$$ = new Write($1.val); }
 	;
 
 
