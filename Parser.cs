@@ -4,9 +4,9 @@
 
 // GPPG version 1.5.2
 // Machine:  POLINAGRINK1DDB
-// DateTime: 6/19/2020 11:05:32 PM
+// DateTime: 6/20/2020 8:21:45 AM
 // UserName: polinagrinko
-// Input file <parser.y - 6/19/2020 11:05:26 PM>
+// Input file <parser.y - 6/20/2020 8:21:39 AM>
 
 // options: lines gplex
 
@@ -21,9 +21,9 @@ namespace GardensPoint
 {
 public enum Tokens {error=2,EOF=3,Program=4,If=5,Else=6,
     While=7,Read=8,Write=9,Return=10,Assign=11,LogicalSum=12,
-    LogicalProduct=13,BitSum=14,BitProduct=15,Equals=16,NotEquals=17,Greater=18,
-    GreaterEquals=19,Lesser=20,LesserEquals=21,Plus=22,Minus=23,Multiplies=24,
-    Divides=25,LogicalNeg=26,BitNeg=27,OpenPar=28,ClosePar=29,OpenBr=30,
+    LogicalProduct=13,BitSum=14,BitProduct=15,LogicalNeg=16,BitNeg=17,Equals=18,
+    NotEquals=19,Greater=20,GreaterEquals=21,Lesser=22,LesserEquals=23,Plus=24,
+    Minus=25,Multiplies=26,Divides=27,OpenPar=28,ClosePar=29,OpenBr=30,
     CloseBr=31,Semicolon=32,Eof=33,Endl=34,Ident=35,IntNumber=36,
     RealNumber=37,BoolValue=38,String=39,Int=40,Double=41,Bool=42};
 
@@ -97,6 +97,30 @@ public class Parser: ShiftReduceParser<ValueType, LexLocation>
     rules[8] = new Rule(-6, new int[]{40});
     rules[9] = new Rule(-6, new int[]{41});
     rules[10] = new Rule(-6, new int[]{42});
+
+    aliases = new Dictionary<int, string>();
+    aliases.Add(11, "=");
+    aliases.Add(12, "||");
+    aliases.Add(13, "&&");
+    aliases.Add(14, "|");
+    aliases.Add(15, "&");
+    aliases.Add(16, "!");
+    aliases.Add(17, "~");
+    aliases.Add(18, "==");
+    aliases.Add(19, "!=");
+    aliases.Add(20, ">");
+    aliases.Add(21, ">=");
+    aliases.Add(22, "<");
+    aliases.Add(23, "<=");
+    aliases.Add(24, "+");
+    aliases.Add(25, "-");
+    aliases.Add(26, "*");
+    aliases.Add(27, "/");
+    aliases.Add(28, "(");
+    aliases.Add(29, ")");
+    aliases.Add(30, "{");
+    aliases.Add(31, "}");
+    aliases.Add(32, ";");
   }
 
   protected override void Initialize() {
@@ -125,7 +149,7 @@ public class Parser: ShiftReduceParser<ValueType, LexLocation>
         return CharToString((char)terminal);
   }
 
-#line 41 "parser.y"
+#line 44 "parser.y"
 
 public Parser(Scanner scanner) : base(scanner) { }
 #line default

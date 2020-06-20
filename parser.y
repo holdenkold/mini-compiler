@@ -8,8 +8,9 @@ public char    type;
 }
 
 %token Program If Else While Read Write Return
-%token Assign LogicalSum LogicalProduct BitSum BitProduct Equals NotEquals Greater GreaterEquals Lesser LesserEquals
-%token Plus Minus Multiplies Divides LogicalNeg BitNeg OpenPar ClosePar OpenBr CloseBr Semicolon
+%token Assign "=" LogicalSum "||" LogicalProduct "&&" BitSum "|" BitProduct "&" LogicalNeg "!" BitNeg "~"
+%token Equals "==" NotEquals "!=" Greater ">" GreaterEquals ">=" Lesser "<" LesserEquals "<="
+%token Plus "+" Minus "-" Multiplies "*" Divides "/"  OpenPar "(" ClosePar ")" OpenBr "{" CloseBr "}" Semicolon ";"
 %token Eof Endl
 
 %token <val> Ident IntNumber RealNumber BoolValue String Ident 
@@ -20,8 +21,8 @@ public char    type;
 start  :  Program compound_statement Eof;
 
 compound_statement
-	: OpenBr CloseBr
-	| OpenBr declaration_list CloseBr
+	: "{" "}"
+	| "{" declaration_list "}"
 	;
 
 declaration_list
@@ -29,7 +30,9 @@ declaration_list
 	| declaration_list declaration
 	;
 
-declaration : types Ident Semicolon;
+declaration 
+	: types Ident ";"
+	;
 
 types 
 	: Int
