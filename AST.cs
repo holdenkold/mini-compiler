@@ -1,15 +1,16 @@
 ﻿using System;
+using System.Data;
 using System.IO;
+using System.Xml.Schema;
 
 namespace mini_compiler
 {
 
     public abstract class AST
     {
-        public abstract string GenCode();
+        public abstract void GenCode();
     }
 
-    
     public enum IdentType
     {
         Int,
@@ -27,7 +28,7 @@ namespace mini_compiler
             varName = name;
         }
 
-        public override string GenCode()
+        public override void GenCode()
         {
             switch (type)
             {
@@ -44,22 +45,27 @@ namespace mini_compiler
                     Compiler.EmitCode($"stloc {varName}"); //initialisation variable with 0 (linking varName with last value on stack)
                     break;
             }
-            return null;
         }
     }
 
     public class Assign : AST
     {
+        string left_ident;
+        string right_value;
         public Assign(string to, string value)
         {
-
+            left_ident = to;
+            right_value = value;
         }
 
-        public override string GenCode()
+        public override void GenCode()
         {
-            return null;
+            Compiler.EmitCode($"ldc.r4 {right_value}");
+            Compiler.EmitCode($"stloc {left_ident}");
         }
     }
+
+   
 }
 
 

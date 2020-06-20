@@ -18,8 +18,8 @@
 %token <val> Ident IntNumber RealNumber BoolValue String 
 %token Int Double Bool
 
-%type <node> declaration
-%type <node_list> declaration_list
+%type <node> declaration statement
+%type <node_list> declaration_list statement_list
 
 %%
 
@@ -28,7 +28,7 @@ start
 	;
 
 compound_statement
-	: "{" declaration_list "}" 
+	: "{" declaration_list statement_list"}" 
 	;
 
 declaration_list
@@ -37,14 +37,40 @@ declaration_list
 	;
 
 declaration 
-	: types Ident ";" {$$ = new Declare($2, $1.type); Console.WriteLine($2);}
+	: types Ident ";" {$$ = new Declare($2, $1.type); Console.WriteLine("declared: " + $2);}
 	;
 
+statement_list
+	: statement_list statement {$1.Add($2); $$ = $1;}
+	| { $$ = new List<AST>();}
+	;
+
+statement
+	: Ident "=" expression ";" { var nd = new LeafNode($3.val); $$ = new Assign($1, nd.Evaluate()); Console.WriteLine($1); Console.WriteLine("="); Console.WriteLine(nd.Evaluate()); Console.WriteLine("\n");}
+	| "{" statement_list "}"
+	| expression ";"
+	|  Return ";"
+	| If "(" expression ")" "{" statement_list "}"
+	| While "(" expression ")" "{" statement_list "}"
+	;
+
+
+expression
+	: values 
+	| 
+	;
 
 types 
 	: Int {$$.type = IdentType.Int;}
 	| Double {$$.type = IdentType.Double;}
 	| Bool {$$.type = IdentType.Bool;}
+	;
+
+values 
+	: Ident 
+	| IntNumber
+	| RealNumber
+	| BoolValue
 	;
 
 %%
