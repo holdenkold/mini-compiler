@@ -1,22 +1,20 @@
 ﻿using System;
 using System.IO;
 using System.Collections.Generic;
-using GardensPoint;
+using mini_compiler;
 
 public class Compiler
 {
-
     public static int errors = 0;
 
     public static List<string> source;
+    List<AST> syntaxTree = new List<AST>();
 
-    // arg[0] określa plik źródłowy
-    // pozostałe argumenty są ignorowane
     public static int Main(string[] args)
     {
         string file;
         FileStream source;
-        Console.WriteLine("\nSingle-Pass CIL Code Generator for Multiline Calculator - Gardens Point");
+        Console.WriteLine("\nMini compiler");
         if (args.Length >= 1)
             file = args[0];
         else

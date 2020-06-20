@@ -4,9 +4,9 @@
 
 // GPPG version 1.5.2
 // Machine:  POLINAGRINK1DDB
-// DateTime: 6/20/2020 8:21:45 AM
+// DateTime: 6/20/2020 3:31:15 PM
 // UserName: polinagrinko
-// Input file <parser.y - 6/20/2020 8:21:39 AM>
+// Input file <parser.y - 6/20/2020 3:31:09 PM>
 
 // options: lines gplex
 
@@ -17,21 +17,23 @@ using System.Globalization;
 using System.Text;
 using QUT.Gppg;
 
-namespace GardensPoint
+namespace mini_compiler
 {
 public enum Tokens {error=2,EOF=3,Program=4,If=5,Else=6,
     While=7,Read=8,Write=9,Return=10,Assign=11,LogicalSum=12,
     LogicalProduct=13,BitSum=14,BitProduct=15,LogicalNeg=16,BitNeg=17,Equals=18,
     NotEquals=19,Greater=20,GreaterEquals=21,Lesser=22,LesserEquals=23,Plus=24,
     Minus=25,Multiplies=26,Divides=27,OpenPar=28,ClosePar=29,OpenBr=30,
-    CloseBr=31,Semicolon=32,Eof=33,Endl=34,Ident=35,IntNumber=36,
-    RealNumber=37,BoolValue=38,String=39,Int=40,Double=41,Bool=42};
+    CloseBr=31,Semicolon=32,Ident=33,IntNumber=34,RealNumber=35,BoolValue=36,
+    String=37,Int=38,Double=39,Bool=40};
 
 public struct ValueType
 #line 5 "parser.y"
 {
-public string  val;
-public char    type;
+	public string  val;
+	public IdentType type;
+	public List<AST> node_list;
+	public AST node;
 }
 #line default
 // Abstract base class for GPLEX scanners
@@ -59,44 +61,40 @@ public class Parser: ShiftReduceParser<ValueType, LexLocation>
 #pragma warning disable 649
   private static Dictionary<int, string> aliases;
 #pragma warning restore 649
-  private static Rule[] rules = new Rule[11];
-  private static State[] states = new State[18];
+  private static Rule[] rules = new Rule[10];
+  private static State[] states = new State[15];
   private static string[] nonTerms = new string[] {
-      "start", "$accept", "compound_statement", "declaration_list", "declaration", 
+      "declaration", "declaration_list", "start", "$accept", "compound_statement", 
       "types", };
 
   static Parser() {
-    states[0] = new State(new int[]{4,3},new int[]{-1,1});
+    states[0] = new State(new int[]{4,3},new int[]{-3,1});
     states[1] = new State(new int[]{3,2});
     states[2] = new State(-1);
-    states[3] = new State(new int[]{30,6},new int[]{-3,4});
-    states[4] = new State(new int[]{33,5});
-    states[5] = new State(-2);
-    states[6] = new State(new int[]{31,7,40,14,41,15,42,16},new int[]{-4,8,-5,17,-6,11});
+    states[3] = new State(new int[]{30,5},new int[]{-5,4});
+    states[4] = new State(-2);
+    states[5] = new State(-5,new int[]{-2,6});
+    states[6] = new State(new int[]{31,7,38,12,39,13,40,14},new int[]{-1,8,-6,9});
     states[7] = new State(-3);
-    states[8] = new State(new int[]{31,9,40,14,41,15,42,16},new int[]{-5,10,-6,11});
-    states[9] = new State(-4);
-    states[10] = new State(-6);
-    states[11] = new State(new int[]{35,12});
-    states[12] = new State(new int[]{32,13});
-    states[13] = new State(-7);
-    states[14] = new State(-8);
-    states[15] = new State(-9);
-    states[16] = new State(-10);
-    states[17] = new State(-5);
+    states[8] = new State(-4);
+    states[9] = new State(new int[]{33,10});
+    states[10] = new State(new int[]{32,11});
+    states[11] = new State(-6);
+    states[12] = new State(-7);
+    states[13] = new State(-8);
+    states[14] = new State(-9);
 
     for (int sNo = 0; sNo < states.Length; sNo++) states[sNo].number = sNo;
 
-    rules[1] = new Rule(-2, new int[]{-1,3});
-    rules[2] = new Rule(-1, new int[]{4,-3,33});
-    rules[3] = new Rule(-3, new int[]{30,31});
-    rules[4] = new Rule(-3, new int[]{30,-4,31});
-    rules[5] = new Rule(-4, new int[]{-5});
-    rules[6] = new Rule(-4, new int[]{-4,-5});
-    rules[7] = new Rule(-5, new int[]{-6,35,32});
-    rules[8] = new Rule(-6, new int[]{40});
-    rules[9] = new Rule(-6, new int[]{41});
-    rules[10] = new Rule(-6, new int[]{42});
+    rules[1] = new Rule(-4, new int[]{-3,3});
+    rules[2] = new Rule(-3, new int[]{4,-5});
+    rules[3] = new Rule(-5, new int[]{30,-2,31});
+    rules[4] = new Rule(-2, new int[]{-2,-1});
+    rules[5] = new Rule(-2, new int[]{});
+    rules[6] = new Rule(-1, new int[]{-6,33,32});
+    rules[7] = new Rule(-6, new int[]{38});
+    rules[8] = new Rule(-6, new int[]{39});
+    rules[9] = new Rule(-6, new int[]{40});
 
     aliases = new Dictionary<int, string>();
     aliases.Add(11, "=");
@@ -135,6 +133,41 @@ public class Parser: ShiftReduceParser<ValueType, LexLocation>
 #pragma warning disable 162, 1522
     switch (action)
     {
+      case 2: // start -> Program, compound_statement
+#line 27 "parser.y"
+                               {Console.WriteLine("Program started");}
+#line default
+        break;
+      case 4: // declaration_list -> declaration_list, declaration
+#line 35 "parser.y"
+                                {ValueStack[ValueStack.Depth-2].node_list.Add(ValueStack[ValueStack.Depth-1].node); CurrentSemanticValue.node_list = ValueStack[ValueStack.Depth-2].node_list;}
+#line default
+        break;
+      case 5: // declaration_list -> /* empty */
+#line 36 "parser.y"
+   { CurrentSemanticValue.node_list = new List<AST>();}
+#line default
+        break;
+      case 6: // declaration -> types, Ident, ";"
+#line 40 "parser.y"
+                   {CurrentSemanticValue.node = new Declare(ValueStack[ValueStack.Depth-2].val, ValueStack[ValueStack.Depth-3].type); Console.WriteLine(ValueStack[ValueStack.Depth-2].val);}
+#line default
+        break;
+      case 7: // types -> Int
+#line 45 "parser.y"
+       {CurrentSemanticValue.type = IdentType.Int;}
+#line default
+        break;
+      case 8: // types -> Double
+#line 46 "parser.y"
+          {CurrentSemanticValue.type = IdentType.Double;}
+#line default
+        break;
+      case 9: // types -> Bool
+#line 47 "parser.y"
+        {CurrentSemanticValue.type = IdentType.Bool;}
+#line default
+        break;
     }
 #pragma warning restore 162, 1522
   }
@@ -149,7 +182,7 @@ public class Parser: ShiftReduceParser<ValueType, LexLocation>
         return CharToString((char)terminal);
   }
 
-#line 44 "parser.y"
+#line 51 "parser.y"
 
 public Parser(Scanner scanner) : base(scanner) { }
 #line default

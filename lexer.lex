@@ -1,5 +1,5 @@
 ﻿%using QUT.Gppg;
-%namespace GardensPoint
+%namespace mini_compiler
 
 IntNumber   ([0-9]|[1-9][0-9]*)
 RealNumber  ([0-9]\.[0-9]+|[1-9][0-9]*\.[0-9]+)
@@ -7,9 +7,17 @@ Ident       ([A-Za-z][0-9]*[A-Za-z]*)*
 Comment		(\/\/.*\n)
 String		\"[^\n\r]*\"
 
+
+%{
+	public override void yyerror(string msg, params object[] args)
+	{
+		Console.WriteLine(msg);
+	}
+%}
+
 %%
 
-"program"       { return (int)Tokens.Program; }
+"program"       { return (int)Tokens.Program;  }
 "if"            { return (int)Tokens.If; }
 "else"          { return (int)Tokens.Else; }
 "while"         { return (int)Tokens.While; }
@@ -27,10 +35,11 @@ String		\"[^\n\r]*\"
 {Ident}         { yylval.val=yytext; return (int)Tokens.Ident; }
 {String}        { return (int)Tokens.String; }
 
-<<EOF>>         { return (int)Tokens.Eof; }
-"\r"            { return (int)Tokens.Endl; }
+<<EOF>>         { return (int)Tokens.EOF; }
+"\r"            { }
 " "             { }
 "\t"            { }
+"\n"			{ }
 
 "="             { return (int)Tokens.Assign; }
 "||"            { return (int)Tokens.LogicalSum; } 
