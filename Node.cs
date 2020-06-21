@@ -7,7 +7,7 @@ namespace mini_compiler
 {
     public abstract class Node
     {
-        public abstract string Evaluate();
+        public abstract double Evaluate();
     }
 
     public class BinaryNode : Node
@@ -22,26 +22,29 @@ namespace mini_compiler
             this.right = right;
         }
 
-        public override string Evaluate()
+        public override double Evaluate()
         {
             var left_val = left.Evaluate();
             var right_val = right.Evaluate();
             switch (op)
             {
-                case "ADD":
+                case "+":
                     return left_val + right_val;
             }
 
-            return null;
+            return int.MinValue;
         }
     }
 
     public class LeafNode : Node
     {
-        string value;
-        public LeafNode(string val) => value = val;
+        double value;
+        public LeafNode(string val)
+        {
+            value = double.Parse(val);
+        }
 
-        public override string Evaluate() => value;
+        public override double Evaluate() => value;
     }
 
 }

@@ -3,10 +3,11 @@
 
 %union
 {
-	public string  val;
+	public string val;
 	public IdentType type;
 	public List<AST> node_list;
 	public AST node;
+	public Node exp_node;
 }
 
 
@@ -15,11 +16,13 @@
 %token Equals "==" NotEquals "!=" Greater ">" GreaterEquals ">=" Lesser "<" LesserEquals "<="
 %token Plus "+" Minus "-" Multiplies "*" Divides "/"  OpenPar "(" ClosePar ")" OpenBr "{" CloseBr "}" Semicolon ";"
 
-%token <val> Ident IntNumber RealNumber BoolValue String 
+%token <val> Ident IntNumber RealNumber BoolValue String
 %token Int Double Bool
 
 %type <node> declaration statement
 %type <node_list> declaration_list statement_list
+%type <exp_node> expression
+
 
 %%
 
@@ -46,21 +49,23 @@ statement_list
 	;
 
 statement
-	: Ident "=" expression ";" {var nd = new LeafNode($3.val); $$ = new Assign($1, nd.Evaluate()); Console.WriteLine($1); Console.WriteLine("="); Console.WriteLine(nd.Evaluate()); Console.WriteLine("\n");}
-	| "{" statement_list "}"
+	: Ident "=" expression ";" { Console.Write($1); Console.Write("="); Console.Write($3.Evaluate()); Console.WriteLine("\n");}
+	| "{" statement_list "}" {Console.WriteLine("{ statement_list }");}
 	| expression ";"
-	|  Return ";"
-	| If "(" expression ")" "{" statement_list "}"
-	| While "(" expression ")" "{" statement_list "}"
-	| Write values ";" {$$ = new Write($1.val); }
-	| Write String ";" {$$ = new Write($1.val); }
+	| Return ";" {Console.WriteLine("return;");}
+	| If "(" expression ")" "{" statement_list "}" {Console.WriteLine("IF");}
+	| While "(" expression ")" "{" statement_list "}" {Console.WriteLine("WHILE");}
+	| write_expression ";"
 	;
-
 
 expression
-	: values 
-	| 
+	: primary_expression {$$ = new LeafNode($1.val);}
+	| expression "+" expression {$$ = new BinaryNode($1, "+",  $3);}
 	;
+
+write_expression 
+	: Write primary_expression
+	; 
 
 types 
 	: Int {$$.type = IdentType.Int;}
@@ -68,10 +73,14 @@ types
 	| Bool {$$.type = IdentType.Bool;}
 	;
 
-values 
+primary_expression
 	: Ident 
-	| IntNumber
-	| RealNumber
+	| values {$$.val = $1.val;}
+	;
+
+values  
+	: IntNumber
+	| RealNumber 
 	| BoolValue
 	;
 
