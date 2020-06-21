@@ -5,7 +5,7 @@ IntNumber   ([0-9]|[1-9][0-9]*)
 RealNumber  ([0-9]\.[0-9]+|[1-9][0-9]*\.[0-9]+)
 Ident       ([A-Za-z][0-9]*[A-Za-z]*)*
 Comment		(\/\/.*\n)
-String		\"[^\n\r]*\"
+String		\"[^'\"'\n]*[^'\'\n]*\"
 
 
 %{
@@ -30,10 +30,10 @@ String		\"[^\n\r]*\"
 
 "true"          { yylval.val=yytext; return (int)Tokens.BoolValue; }
 "false"         { yylval.val=yytext; return (int)Tokens.BoolValue; }
-{IntNumber}     { yylval.val=yytext; return (int)Tokens.IntNumber; }
+{IntNumber}     { yylval.val=yytext; return (int)Tokens.IntNumber; Console.WriteLine((int)Tokens.IntNumber);}
 {RealNumber}    { yylval.val=yytext; return (int)Tokens.RealNumber; }
 {Ident}         { yylval.val=yytext; return (int)Tokens.Ident; }
-{String}        { return (int)Tokens.String; }
+{String}        { yylval.val=yytext; return (int)Tokens.String; }
 
 <<EOF>>         { return (int)Tokens.EOF; }
 "\r"            { }

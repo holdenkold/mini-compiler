@@ -68,27 +68,18 @@ namespace mini_compiler
 
     public class Write : AST
     {
-        double value;
-        public Write(string value)
+        AST value;
+        public Write(AST value)
         {
-
-            this.value = double.Parse(value);
+            Console.WriteLine($"printing var:");
+            this.value = value;
             GenCode();
         }
 
         public override void GenCode()
         {
-            //if (value.All(Char.IsDigit)) // case when int/double/bool provided
-            //{
-                
-                Compiler.EmitCode($"ldc.r4 {value}");
-            //}
-            //else // case when variable name provided
-            //{
-            //    Compiler.EmitCode($"ldloc {value}");
-            //}
-            
-            Compiler.EmitCode($"call void [System.Console]System.Console::Write(float32)");
+            value.GenCode();
+            Compiler.EmitCode($"call void [System.Console]System.Console::Write(int32)");
         }
     }
 
@@ -105,7 +96,7 @@ namespace mini_compiler
         public override void GenCode()
         {
             Compiler.EmitCode($"ldstr {str}");
-            Compiler.EmitCode($"call void [System.Console]System.Console::Write(string)");
+            Compiler.EmitCode($"call void [mscorlib]System.Console::Write(string)");
         }
     }
 

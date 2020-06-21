@@ -5,12 +5,16 @@ using System.Text;
 
 namespace mini_compiler
 {
-    public class BinaryNode : AST
+
+    public abstract class Node : AST
+    { 
+    }
+    public class BinaryNode : Node
     {
-        AST right;
-        AST left;
+        Node right;
+        Node left;
         string op;
-        public BinaryNode(AST left, string op, AST right)
+        public BinaryNode(Node left, string op, Node right)
         {
             this.left = left;
             this.op = op;
@@ -25,7 +29,7 @@ namespace mini_compiler
         }
     }
 
-    public class LeafValNode : AST
+    public class LeafValNode : Node
     {
         Constant value;
         public LeafValNode(Constant con) => value = con;

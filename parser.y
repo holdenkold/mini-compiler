@@ -19,14 +19,14 @@
 %token <val> Ident IntNumber RealNumber BoolValue String
 %token Int Double Bool
 
-%type <node> declaration statement expression binary_exp primary_expression
+%type <node> declaration statement expression binary_exp primary_expression write_expression
 %type <node_list> declaration_list statement_list
 %type <con> values
 
 
 %%
 
-start  
+starth  
 	:  Program compound_statement {Console.WriteLine("Program started");}
 	;
 
@@ -49,13 +49,13 @@ statement_list
 	;
 
 statement
-	: Ident "=" expression ";" { $$ = new Assign($1, $3); Console.Write($1); Console.Write("="); Console.Write($3); Console.WriteLine("\n");}
-	| "{" statement_list "}" {Console.WriteLine("{ statement_list }");}
+	: Ident "=" expression ";" { $$ = new Assign($1, $3);}
+	| write_expression ";"
+	| "{" statement_list "}"
 	| expression ";"
 	| Return ";" {Console.WriteLine("return;");}
 	| If "(" expression ")" "{" statement_list "}" {Console.WriteLine("IF");}
 	| While "(" expression ")" "{" statement_list "}" {Console.WriteLine("WHILE");}
-	| write_expression ";"
 	;
 
 expression
@@ -71,7 +71,8 @@ binary_exp
 	;
 
 write_expression 
-	: Write primary_expression
+	: Write expression {$$ = new Write($2);}
+	| Write String {$$ = new WriteString($2); Console.WriteLine($2);}
 	; 
 
 types 
