@@ -5,46 +5,39 @@ using System.Text;
 
 namespace mini_compiler
 {
-    public abstract class Node
+    public class BinaryNode : AST
     {
-        public abstract double Evaluate();
-    }
-
-    public class BinaryNode : Node
-    {
-        Node right;
-        Node left;
+        AST right;
+        AST left;
         string op;
-        public BinaryNode(Node left, string op, Node right)
+        public BinaryNode(AST left, string op, AST right)
         {
             this.left = left;
             this.op = op;
             this.right = right;
         }
 
-        public override double Evaluate()
+        public override void GenCode()
         {
-            var left_val = left.Evaluate();
-            var right_val = right.Evaluate();
-            switch (op)
-            {
-                case "+":
-                    return left_val + right_val;
-            }
-
-            return int.MinValue;
+            left.GenCode();
+            right.GenCode();
+            Compiler.EmitCode(op);
         }
     }
 
-    public class LeafNode : Node
+    public class LeafValNode : AST
     {
-        double value;
-        public LeafNode(string val)
-        {
-            value = double.Parse(val);
-        }
+        Constant value;
+        public LeafValNode(Constant con) => value = con;
 
-        public override double Evaluate() => value;
+        public override void GenCode() => value.PushStack();
     }
 
+    public class LeafVarNode : AST
+    {
+        string name;
+        public LeafVarNode(string name) => this.name = name;
+
+        public override void GenCode() => Compiler.EmitCode($"ldloc {name}");
+    }
 }

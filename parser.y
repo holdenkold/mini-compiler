@@ -7,7 +7,7 @@
 	public IdentType type;
 	public List<AST> node_list;
 	public AST node;
-	public Node exp_node;
+	public Constant con;
 }
 
 
@@ -19,9 +19,9 @@
 %token <val> Ident IntNumber RealNumber BoolValue String
 %token Int Double Bool
 
-%type <node> declaration statement
+%type <node> declaration statement expression binary_exp primary_expression
 %type <node_list> declaration_list statement_list
-%type <exp_node> expression
+%type <con> values
 
 
 %%
@@ -49,7 +49,7 @@ statement_list
 	;
 
 statement
-	: Ident "=" expression ";" { Console.Write($1); Console.Write("="); Console.Write($3.Evaluate()); Console.WriteLine("\n");}
+	: Ident "=" expression ";" { $$ = new Assign($1, $3); Console.Write($1); Console.Write("="); Console.Write($3); Console.WriteLine("\n");}
 	| "{" statement_list "}" {Console.WriteLine("{ statement_list }");}
 	| expression ";"
 	| Return ";" {Console.WriteLine("return;");}
@@ -59,8 +59,15 @@ statement
 	;
 
 expression
-	: primary_expression {$$ = new LeafNode($1.val);}
-	| expression "+" expression {$$ = new BinaryNode($1, "+",  $3);}
+	: primary_expression 
+	| binary_exp
+	;
+
+binary_exp
+	: expression "*" expression { $$ = new BinaryNode($1, "mul", $3);}
+	| expression "/" expression { $$ = new BinaryNode($1, "div", $3);}
+	| expression "+" expression { $$ = new BinaryNode($1, "add", $3);}
+	| expression "-" expression { $$ = new BinaryNode($1, "sub", $3);}
 	;
 
 write_expression 
@@ -74,14 +81,14 @@ types
 	;
 
 primary_expression
-	: Ident 
-	| values {$$.val = $1.val;}
+	: Ident {$$ = new LeafVarNode($1);}
+	| values {$$ = new LeafValNode($1);}
 	;
 
 values  
-	: IntNumber
-	| RealNumber 
-	| BoolValue
+	: IntNumber {$$ = new Constant(IdentType.Int, $1);}
+	| RealNumber {$$ = new Constant(IdentType.Double, $1);}
+	| BoolValue {$$ = new Constant(IdentType.Bool, $1);}
 	;
 
 %%

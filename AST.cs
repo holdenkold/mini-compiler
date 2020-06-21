@@ -12,13 +12,6 @@ namespace mini_compiler
         public abstract void GenCode();
     }
 
-    public enum IdentType
-    {
-        Int,
-        Double,
-        Bool
-    }
-
     public class Declare : AST
     {
         IdentType type;
@@ -58,27 +51,17 @@ namespace mini_compiler
     public class Assign : AST
     {
         string left_ident;
-        double right_value;
-        public Assign(string to, Node node)
+        AST right_node;
+        public Assign(string to, AST node)
         {
             left_ident = to;
-            right_value = node.Evaluate();
-
+            right_node = node;
             GenCode();
         }
 
         public override void GenCode()
         {
-            Compiler.EmitCode($"ldc.r4 {right_value}");
-            //if (right_value.All(Char.IsDigit)) // case when int/double/bool provided
-            //{
-            //    Compiler.EmitCode($"ldc.i4 {right_value}");
-            //}
-            //else // case when variable name provided
-            //{
-            //    Compiler.EmitCode($"ldloc {right_value}");
-            //}
-
+            right_node.GenCode();
             Compiler.EmitCode($"stloc {left_ident}");
         }
     }
