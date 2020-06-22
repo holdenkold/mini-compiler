@@ -6,10 +6,10 @@ using System.Xml.Schema;
 
 namespace mini_compiler
 {
-
     public abstract class AST
     {
         public abstract void GenCode();
+        public abstract void СheckType();
     }
 
     public class Declare : AST
@@ -20,6 +20,8 @@ namespace mini_compiler
         {
             this.type = type;
             varName = name;
+
+            Compiler.SymbolTable[name] = type;
             GenCode();
         }
 
@@ -46,6 +48,11 @@ namespace mini_compiler
                     break;
             }
         }
+
+        public override void СheckType()
+        {
+            return;
+        }
     }
 
     public class Assign : AST
@@ -64,12 +71,17 @@ namespace mini_compiler
             right_node.GenCode();
             Compiler.EmitCode($"stloc {left_ident}");
         }
+
+        public override void СheckType()
+        {
+            return;
+        }
     }
 
     public class Write : AST
     {
-        AST value;
-        public Write(AST value)
+        Node value;
+        public Write(Node value)
         {
             Console.WriteLine($"printing var:");
             this.value = value;
@@ -79,7 +91,12 @@ namespace mini_compiler
         public override void GenCode()
         {
             value.GenCode();
-            Compiler.EmitCode($"call void [System.Console]System.Console::Write(int32)");
+            Compiler.EmitCode($"call void [mscorlib]System.Console::Write({value.ExpType})");
+        }
+
+        public override void СheckType()
+        {
+            return;
         }
     }
 
@@ -97,6 +114,11 @@ namespace mini_compiler
         {
             Compiler.EmitCode($"ldstr {str}");
             Compiler.EmitCode($"call void [mscorlib]System.Console::Write(string)");
+        }
+
+        public override void СheckType()
+        {
+            return;
         }
     }
 

@@ -8,7 +8,13 @@ public class Compiler
     public static int errors = 0;
 
     public static List<string> source;
-    List<AST> syntaxTree = new List<AST>();
+    public static List<AST> syntaxTree = new List<AST>();
+    public static Dictionary<string, IdentType> SymbolTable = new Dictionary<string, IdentType>();
+
+    public static Dictionary<IdentType, string> IdentTypeMap = new Dictionary<IdentType, string> {
+        { IdentType.Int, "int32" }, { IdentType.Double, "float32" }, { IdentType.Bool, "string" }
+    };
+
 
     public static int Main(string[] args)
     {
@@ -35,12 +41,19 @@ public class Compiler
             Console.WriteLine("\n" + e.Message);
             return 1;
         }
+
+
         Scanner scanner = new Scanner(source);
         Parser parser = new Parser(scanner);
         Console.WriteLine();
         sw = new StreamWriter(file + ".il");
         GenProlog();
         parser.Parse();
+
+
+        Compiler.syntaxTree.ForEach(n => n.СheckType());
+        Compiler.syntaxTree.ForEach(n => n.GenCode());
+
         GenEpilog();
         sw.Close();
         source.Close();
@@ -54,15 +67,9 @@ public class Compiler
         return errors == 0 ? 0 : 2;
     }
 
-    public static void EmitCode(string instr = null)
-    {
-        sw.WriteLine(instr);
-    }
+    public static void EmitCode(string instr = null) => sw.WriteLine(instr);
 
-    public static void EmitCode(string instr, params object[] args)
-    {
-        sw.WriteLine(instr, args);
-    }
+    public static void EmitCode(string instr, params object[] args) => sw.WriteLine(instr, args);
 
     private static StreamWriter sw;
 

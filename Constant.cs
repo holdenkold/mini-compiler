@@ -14,7 +14,7 @@ namespace mini_compiler
 
     public class Constant
     {
-        IdentType type;
+        public IdentType type;
         string value;
 
         public Constant(IdentType type, string value)
@@ -30,9 +30,8 @@ namespace mini_compiler
                 case IdentType.Int:
                     Compiler.EmitCode($"ldc.i4 {value}");
                     break;
-                case IdentType.Bool:
-                    var val = value == "true" ? 1 : 0;
-                    Compiler.EmitCode($"ldc.i4 {val}");
+                case IdentType.Bool:                    
+                    Compiler.EmitCode($"ldstr \"{value}\"");
                     break;
                 case IdentType.Double:
                     Compiler.EmitCode($"ldc.r4 {value}");

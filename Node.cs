@@ -6,14 +6,16 @@ using System.Text;
 namespace mini_compiler
 {
 
-    public abstract class Node : AST
-    { 
+    public abstract class Node : AST 
+    {
+        public abstract string ExpType { get; }
     }
     public class BinaryNode : Node
     {
         Node right;
         Node left;
         string op;
+
         public BinaryNode(Node left, string op, Node right)
         {
             this.left = left;
@@ -27,6 +29,13 @@ namespace mini_compiler
             right.GenCode();
             Compiler.EmitCode(op);
         }
+
+        public override string ExpType => right.ExpType;
+
+        public override void СheckType()
+        {
+            return;
+        }
     }
 
     public class LeafValNode : Node
@@ -35,13 +44,29 @@ namespace mini_compiler
         public LeafValNode(Constant con) => value = con;
 
         public override void GenCode() => value.PushStack();
+
+        public override string ExpType => Compiler.IdentTypeMap[value.type];
+
+        public override void СheckType()
+        {
+            return;
+        }
     }
 
-    public class LeafVarNode : AST
+    public class LeafVarNode : Node
     {
         string name;
         public LeafVarNode(string name) => this.name = name;
 
         public override void GenCode() => Compiler.EmitCode($"ldloc {name}");
+
+        public override string ExpType => Compiler.IdentTypeMap[Compiler.SymbolTable[name]];
+
+        public override void СheckType()
+        {
+            return;
+        }
+
+
     }
 }

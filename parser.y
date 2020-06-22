@@ -8,6 +8,7 @@
 	public List<AST> node_list;
 	public AST node;
 	public Constant con;
+	public Node bnode;
 }
 
 
@@ -19,8 +20,9 @@
 %token <val> Ident IntNumber RealNumber BoolValue String
 %token Int Double Bool
 
-%type <node> declaration statement expression binary_exp primary_expression write_expression
+%type <node> declaration statement write_expression
 %type <node_list> declaration_list statement_list
+%type <bnode> binary_exp expression primary_expression
 %type <con> values
 
 
