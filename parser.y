@@ -22,7 +22,7 @@
 
 %type <node> declaration statement write_expression
 %type <node_list> declaration_list statement_list
-%type <bnode> binary_exp expression primary_expression
+%type <bnode> expression primary_expression term
 %type <con> values
 
 
@@ -61,16 +61,15 @@ statement
 	;
 
 expression
-	: primary_expression 
-	| binary_exp
-	| "(" expression ")" {$$ = $2;}
+	: term 
+	| expression "+" term { $$ = new BinaryNode($1, "add", $3);}
+	| expression "-" term { $$ = new BinaryNode($1, "sub", $3);}
 	;
 
-binary_exp
-	: expression "*" expression { $$ = new BinaryNode($1, "mul", $3);}
-	| expression "/" expression { $$ = new BinaryNode($1, "div", $3);}
-	| expression "+" expression { $$ = new BinaryNode($1, "add", $3);}
-	| expression "-" expression { $$ = new BinaryNode($1, "sub", $3);}
+term
+	: primary_expression
+	| term "*" primary_expression {$$ = new BinaryNode($1, "mul", $3);}
+	| term "/" primary_expression {$$ = new BinaryNode($1, "div", $3);}
 	;
 
 write_expression 
