@@ -22,7 +22,8 @@ namespace mini_compiler
             varName = name;
 
             Compiler.SymbolTable[name] = type;
-            GenCode();
+            Compiler.syntaxTree.Add(this);
+            //GenCode();
         }
 
         public override void GenCode()
@@ -39,8 +40,6 @@ namespace mini_compiler
                     Compiler.EmitCode("ldc.i4.0"); //pushing 0 on stack
                     Compiler.EmitCode($"stloc {varName}"); //initialisation variable with 0 (linking varName with last value on stack)
                     break;
-
-
                 case IdentType.Double:
                     Compiler.EmitCode($".locals init ( float64 {varName} )"); //declare
                     Compiler.EmitCode("ldc.r8 0.0"); //pushing 0 on stack
@@ -63,7 +62,8 @@ namespace mini_compiler
         {
             left_ident = to;
             right_node = node;
-            GenCode();
+            Compiler.syntaxTree.Add(this);
+            //GenCode();
         }
 
         public override void GenCode()
@@ -85,7 +85,8 @@ namespace mini_compiler
         {
             Console.WriteLine($"printing var:");
             this.value = value;
-            GenCode();
+            Compiler.syntaxTree.Add(this);
+            //GenCode();
         }
 
         public override void GenCode()
@@ -107,7 +108,8 @@ namespace mini_compiler
         {
             Console.WriteLine($"printing str: {str}");
             this.str = str;
-            GenCode();
+            Compiler.syntaxTree.Add(this);
+            //GenCode();
         }
 
         public override void GenCode()

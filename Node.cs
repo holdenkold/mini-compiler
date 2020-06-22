@@ -21,6 +21,7 @@ namespace mini_compiler
             this.left = left;
             this.op = op;
             this.right = right;
+            Compiler.syntaxTree.Add(this);
         }
 
         public override void GenCode()
@@ -41,7 +42,11 @@ namespace mini_compiler
     public class LeafValNode : Node
     {
         Constant value;
-        public LeafValNode(Constant con) => value = con;
+        public LeafValNode(Constant con)
+        {
+            value = con;
+            Compiler.syntaxTree.Add(this);
+        }
 
         public override void GenCode() => value.PushStack();
 
@@ -56,7 +61,11 @@ namespace mini_compiler
     public class LeafVarNode : Node
     {
         string name;
-        public LeafVarNode(string name) => this.name = name;
+        public LeafVarNode(string name)
+        {
+            this.name = name;
+            Compiler.syntaxTree.Add(this);
+        }
 
         public override void GenCode() => Compiler.EmitCode($"ldloc {name}");
 

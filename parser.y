@@ -63,6 +63,7 @@ statement
 expression
 	: primary_expression 
 	| binary_exp
+	| "(" expression ")" {$$ = $2;}
 	;
 
 binary_exp

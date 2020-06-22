@@ -50,7 +50,6 @@ public class Compiler
         GenProlog();
         parser.Parse();
 
-
         Compiler.syntaxTree.ForEach(n => n.СheckType());
         Compiler.syntaxTree.ForEach(n => n.GenCode());
 
