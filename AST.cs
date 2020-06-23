@@ -23,7 +23,6 @@ namespace mini_compiler
 
             Compiler.SymbolTable[name] = type;
             Compiler.syntaxTree.Add(this);
-            //GenCode();
         }
 
         public override void GenCode()
@@ -63,7 +62,6 @@ namespace mini_compiler
             left_ident = to;
             right_node = node;
             Compiler.syntaxTree.Add(this);
-            //GenCode();
         }
 
         public override void GenCode()
@@ -86,7 +84,6 @@ namespace mini_compiler
             Console.WriteLine($"printing var:");
             this.value = value;
             Compiler.syntaxTree.Add(this);
-            //GenCode();
         }
 
         public override void GenCode()
@@ -109,7 +106,6 @@ namespace mini_compiler
             Console.WriteLine($"printing str: {str}");
             this.str = str;
             Compiler.syntaxTree.Add(this);
-            //GenCode();
         }
 
         public override void GenCode()
@@ -123,6 +119,30 @@ namespace mini_compiler
             return;
         }
     }
+
+    public class Read : AST
+    {
+        LeafVarNode node;
+        public Read(LeafVarNode node)
+        { 
+            this.node = node;
+            Compiler.syntaxTree.Add(this);
+        }
+
+        public override void GenCode()
+        {
+            var type = char.ToUpper(node.ExpType[0]) + node.ExpType.Substring(1); //converting type, for ex: int32 -> Int32
+            Compiler.EmitCode($"call string [mscorlib]System.Console::ReadLine()");
+            Compiler.EmitCode($"call {node.ExpType} [mscorlib]System.{type}::Parse(string)");
+            Compiler.EmitCode($"stloc {node.name}");
+        }
+
+        public override void СheckType()
+        {
+            return;
+        }
+    }
+
 
 }
 

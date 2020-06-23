@@ -60,7 +60,7 @@ namespace mini_compiler
 
     public class LeafVarNode : Node
     {
-        string name;
+        public string name;
         public LeafVarNode(string name)
         {
             this.name = name;

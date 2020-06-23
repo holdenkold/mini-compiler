@@ -20,7 +20,7 @@
 %token <val> Ident IntNumber RealNumber BoolValue String
 %token Int Double Bool
 
-%type <node> declaration statement write_expression
+%type <node> declaration statement write_expression read_expression
 %type <node_list> declaration_list statement_list
 %type <bnode> expression primary_expression term
 %type <con> values
@@ -53,6 +53,7 @@ statement_list
 statement
 	: Ident "=" expression ";" { $$ = new Assign($1, $3);}
 	| write_expression ";"
+	| read_expression ";"
 	| "{" statement_list "}"
 	| expression ";"
 	| Return ";" {Console.WriteLine("return;");}
@@ -77,6 +78,10 @@ write_expression
 	: Write expression {$$ = new Write($2);}
 	| Write String {$$ = new WriteString($2); Console.WriteLine($2);}
 	; 
+
+read_expression
+	: Read Ident {$$ = new Read(new LeafVarNode($2));}
+	;
 
 types 
 	: Int {$$.type = IdentType.Int;}
