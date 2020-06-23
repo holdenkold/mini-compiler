@@ -68,6 +68,7 @@ expression
 
 term
 	: primary_expression
+	| "(" expression ")" {$$ = $2;}
 	| term "*" primary_expression {$$ = new BinaryNode($1, "mul", $3);}
 	| term "/" primary_expression {$$ = new BinaryNode($1, "div", $3);}
 	;
