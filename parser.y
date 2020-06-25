@@ -20,20 +20,20 @@
 %token <val> Ident IntNumber RealNumber BoolValue String
 %token Int Double Bool
 
-%type <node> declaration statement write_expression read_expression
-%type <node_list> declaration_list statement_list
-%type <bnode> expression primary_expression term
+%type <node> declaration statement write_expression read_expression assign_statement
+%type <node_list> declaration_list statement_list compound_statement
+%type <bnode> expression primary_expression term factor rterm pre
 %type <con> values
 
 
 %%
 
-starth  
-	:  Program compound_statement {Console.WriteLine("Program started");}
+start 
+	:  Program "{" declaration_list statement_list"}" {Console.WriteLine("Program started");}
 	;
 
 compound_statement
-	: "{" declaration_list statement_list"}" 
+	: '{' statement_list '}' {$$ = $2;}
 	;
 
 declaration_list
@@ -50,29 +50,57 @@ statement_list
 	| { $$ = new List<AST>();}
 	;
 
+
+expression_statement
+	: ';'
+	| expression ';'
+	;
+
+assign_statement
+	: Ident "=" expression { $$ = new Assign($1, $3);}
+	| Ident "=" assign_statement {$$ = new Assign($1, $3);}
+	;
+
 statement
-	: Ident "=" expression ";" { $$ = new Assign($1, $3);}
+	: assign_statement ";"
 	| write_expression ";"
 	| read_expression ";"
-	| "{" statement_list "}"
-	| expression ";"
+	| compound_statement
+	| expression_statement
 	| Return ";" {Console.WriteLine("return;");}
-	| If "(" expression ")" "{" statement_list "}" {Console.WriteLine("IF");}
-	| While "(" expression ")" "{" statement_list "}" {Console.WriteLine("WHILE");}
+	| If "(" expression ")" statement {$$ = new IfNode($3, $5);}
+	| If "(" expression ")" statement Else statement  {$$ = new IfNode($3, $5, $7);}
+	| While "(" expression ")" statement {Console.WriteLine("WHILE");}
 	;
 
 expression
 	: term 
-	| expression "+" term { $$ = new BinaryNode($1, "add", $3);}
-	| expression "-" term { $$ = new BinaryNode($1, "sub", $3);}
+	| expression "+" rterm { $$ = new BinaryNode($1, "add", $3);}
+	| expression "-" rterm { $$ = new BinaryNode($1, "sub", $3);}
 	;
 
-term
+rterm
+	: factor
+	| term "*" factor {$$ = new BinaryNode($1, "mul", $3);}
+	| term "/" factor {$$ = new BinaryNode($1, "div", $3);}
+	;
+
+term 
+	: rterm 
+	| pre
+	;
+
+pre  
+	: "-" expression {$$ = new UnaryNode($2, "neg");}
+	| "~" expression {$$ = new UnaryNode($2, "not");}
+	| "!" expression {$$ = new UnaryNode($2, "ceq");}
+	;
+
+factor
 	: primary_expression
 	| "(" expression ")" {$$ = $2;}
-	| term "*" primary_expression {$$ = new BinaryNode($1, "mul", $3);}
-	| term "/" primary_expression {$$ = new BinaryNode($1, "div", $3);}
 	;
+	
 
 write_expression 
 	: Write expression {$$ = new Write($2);}

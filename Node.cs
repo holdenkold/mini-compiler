@@ -75,7 +75,30 @@ namespace mini_compiler
         {
             return;
         }
+    }
 
+    public class UnaryNode : Node
+    {
+        Node exp;
+        string op;
+        public UnaryNode(Node exp, string op)
+        {
+            this.exp = exp;
+            this.op = op;
+            Compiler.syntaxTree.Add(this);
+        }
 
+        public override void GenCode() 
+        {
+            exp.GenCode();
+            Compiler.EmitCode(op);
+        }
+
+        public override string ExpType => exp.ExpType;
+
+        public override void СheckType()
+        {
+            return;
+        }
     }
 }

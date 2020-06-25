@@ -12,7 +12,7 @@ public class Compiler
     public static Dictionary<string, IdentType> SymbolTable = new Dictionary<string, IdentType>();
 
     public static Dictionary<IdentType, string> IdentTypeMap = new Dictionary<IdentType, string> {
-        { IdentType.Int, "int32" }, { IdentType.Double, "float32" }, { IdentType.Bool, "string" }
+        { IdentType.Int, "int32" }, { IdentType.Double, "float32" }, { IdentType.Bool, "bool" }
     };
 
 

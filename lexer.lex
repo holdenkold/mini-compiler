@@ -11,6 +11,7 @@ String		\"[^'\"'\n]*[^'\'\n]*\"
 %{
 	public override void yyerror(string msg, params object[] args)
 	{
+		Compiler.errors += 1;
 		Console.WriteLine(msg);
 	}
 %}

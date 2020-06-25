@@ -105,7 +105,7 @@ namespace mini_compiler
         {
             Console.WriteLine($"printing str: {str}");
             this.str = str;
-            Compiler.syntaxTree.Add(this);
+            //Compiler.syntaxTree.Add(this);
         }
 
         public override void GenCode()
@@ -140,6 +140,70 @@ namespace mini_compiler
         public override void СheckType()
         {
             return;
+        }
+    }
+
+    public class IfNode : AST
+    {
+        Node condition;
+        AST body;
+        AST elsebody;
+        public IfNode(Node condition, AST body, AST elsebody = null)
+        {
+            this.condition = condition;
+            this.body = body;
+            this.elsebody = elsebody;
+            Compiler.syntaxTree.Add(this);
+        }
+
+        public override void GenCode()
+        {
+            condition.GenCode(); //pushing to stack condition result
+            Compiler.EmitCode("brfalse IF_FALSE");
+            body.GenCode();
+
+            Compiler.EmitCode("IF_FALSE:");
+            if (elsebody != null)  // ELSE
+                elsebody.GenCode();
+
+        }
+
+        public override void СheckType()
+        {
+            //if (condition.ExpType != "string")
+            //{
+            //    Compiler.errors += 1;
+            //    Console.WriteLine($"Semantic Error: Expected bool expression, got {condition.ExpType}");
+            //}
+
+                
+        }
+    }
+    public class WhileNode : AST
+    {
+        Node condition;
+        AST body;
+        public WhileNode(Node condition, AST body)
+        {
+            this.condition = condition;
+            this.body = body;
+            Compiler.syntaxTree.Add(this);
+        }
+
+        public override void GenCode()
+        {
+            condition.GenCode(); //pushing to stack condition result
+            Compiler.EmitCode("brfalse IF_FALSE");
+            body.GenCode();
+        }
+
+        public override void СheckType()
+        {
+            //if (condition.ExpType != "string")
+            //{
+            //    Compiler.errors += 1;
+            //    Console.WriteLine($"Semantic Error: Expected bool expression, got {condition.ExpType}");
+            //}
         }
     }
 
