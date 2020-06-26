@@ -20,9 +20,9 @@
 %token <val> Ident IntNumber RealNumber BoolValue String
 %token Int Double Bool
 
-%type <node> declaration statement write_expression read_expression assign_statement
-%type <node_list> declaration_list statement_list compound_statement
-%type <bnode> expression primary_expression term factor rterm pre
+%type <node> declaration statement write_expression read_expression 
+%type <node_list> declaration_list statement_list
+%type <bnode> expression assign_statement primary_expression term factor rterm pre
 %type <con> values
 
 
@@ -30,10 +30,6 @@
 
 start 
 	:  Program "{" declaration_list statement_list"}" {Console.WriteLine("Program started");}
-	;
-
-compound_statement
-	: '{' statement_list '}' {$$ = $2;}
 	;
 
 declaration_list
@@ -52,8 +48,8 @@ statement_list
 
 
 expression_statement
-	: ';'
-	| expression ';'
+	: ";"
+	| expression ";"
 	;
 
 assign_statement
@@ -65,12 +61,12 @@ statement
 	: assign_statement ";"
 	| write_expression ";"
 	| read_expression ";"
-	| compound_statement
 	| expression_statement
+	| "{" statement_list "}" {$$ = new Block($2==null? null : $2);}
 	| Return ";" {Console.WriteLine("return;");}
 	| If "(" expression ")" statement {$$ = new IfNode($3, $5);}
 	| If "(" expression ")" statement Else statement  {$$ = new IfNode($3, $5, $7);}
-	| While "(" expression ")" statement {Console.WriteLine("WHILE");}
+	| While "(" expression ")" statement {$$ = new WhileNode($3, $5);}
 	;
 
 expression
@@ -79,15 +75,15 @@ expression
 	| expression "-" rterm { $$ = new BinaryNode($1, "sub", $3);}
 	;
 
+term 
+	: rterm 
+	| pre
+	;
+
 rterm
 	: factor
 	| term "*" factor {$$ = new BinaryNode($1, "mul", $3);}
 	| term "/" factor {$$ = new BinaryNode($1, "div", $3);}
-	;
-
-term 
-	: rterm 
-	| pre
 	;
 
 pre  
@@ -99,6 +95,17 @@ pre
 factor
 	: primary_expression
 	| "(" expression ")" {$$ = $2;}
+	;
+
+primary_expression
+	: Ident {$$ = new LeafVarNode($1);}
+	| values {$$ = new LeafValNode($1);}
+	;
+
+values  
+	: IntNumber {$$ = new Constant(IdentType.Int, $1);}
+	| RealNumber {$$ = new Constant(IdentType.Double, $1);}
+	| BoolValue {$$ = new Constant(IdentType.Bool, $1);}
 	;
 	
 
@@ -117,16 +124,6 @@ types
 	| Bool {$$.type = IdentType.Bool;}
 	;
 
-primary_expression
-	: Ident {$$ = new LeafVarNode($1);}
-	| values {$$ = new LeafValNode($1);}
-	;
-
-values  
-	: IntNumber {$$ = new Constant(IdentType.Int, $1);}
-	| RealNumber {$$ = new Constant(IdentType.Double, $1);}
-	| BoolValue {$$ = new Constant(IdentType.Bool, $1);}
-	;
 
 %%
 

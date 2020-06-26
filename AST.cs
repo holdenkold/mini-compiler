@@ -1,7 +1,10 @@
-﻿using System;
+﻿using QUT.Gppg;
+using System;
+using System.Collections.Generic;
 using System.Data;
 using System.IO;
 using System.Linq;
+using System.Runtime.Remoting.Messaging;
 using System.Xml.Schema;
 
 namespace mini_compiler
@@ -53,16 +56,18 @@ namespace mini_compiler
         }
     }
 
-    public class Assign : AST
+    public class Assign : Node
     {
         string left_ident;
-        AST right_node;
-        public Assign(string to, AST node)
+        Node right_node;
+        public Assign(string to, Node node)
         {
             left_ident = to;
             right_node = node;
             Compiler.syntaxTree.Add(this);
         }
+
+        public override string ExpType => right_node.ExpType;
 
         public override void GenCode()
         {
@@ -72,7 +77,41 @@ namespace mini_compiler
 
         public override void СheckType()
         {
-            return;
+            IdentType assigntTo = Compiler.SymbolTable[left_ident];
+            string assigntFrom = right_node.ExpType;
+            if (assigntTo == IdentType.Double && assigntFrom == "bool")
+            {
+                Compiler.errors += 1;
+                Console.WriteLine("Semantic Error: Expected int or double for assigment, got bool");
+            }
+            else if (assigntTo == IdentType.Int && assigntFrom != "int32")
+            {
+                Compiler.errors += 1;
+                Console.WriteLine($"Semantic Error: Expected int for assigment, got {assigntFrom}");
+            }
+            else if (assigntTo == IdentType.Bool && assigntFrom != "bool")
+            {
+                Compiler.errors += 1;
+                Console.WriteLine($"Semantic Error: Expected bool for assigment, got {assigntFrom}");
+            }
+        }
+    }
+
+    public class Block : AST
+    {
+        List<AST> statements;
+        public Block(List<AST> statements) => this.statements = statements;
+
+        public override void GenCode()
+        {
+            if(statements!= null)
+                statements.ForEach(s => s.GenCode());
+        }
+
+        public override void СheckType()
+        {
+            if (statements != null)
+                statements.ForEach(s => s.СheckType());
         }
     }
 
@@ -105,7 +144,7 @@ namespace mini_compiler
         {
             Console.WriteLine($"printing str: {str}");
             this.str = str;
-            //Compiler.syntaxTree.Add(this);
+            Compiler.syntaxTree.Add(this);
         }
 
         public override void GenCode()
@@ -159,24 +198,23 @@ namespace mini_compiler
         public override void GenCode()
         {
             condition.GenCode(); //pushing to stack condition result
-            Compiler.EmitCode("brfalse IF_FALSE");
+            Compiler.EmitCode($"brfalse L{Compiler.label_num}");
             body.GenCode();
 
-            Compiler.EmitCode("IF_FALSE:");
+            Compiler.EmitCode($"L{Compiler.label_num}:");
             if (elsebody != null)  // ELSE
                 elsebody.GenCode();
 
+            Compiler.label_num++;
         }
 
         public override void СheckType()
         {
-            //if (condition.ExpType != "string")
-            //{
-            //    Compiler.errors += 1;
-            //    Console.WriteLine($"Semantic Error: Expected bool expression, got {condition.ExpType}");
-            //}
-
-                
+            if (condition.ExpType != "bool")
+            {
+                Compiler.errors += 1;
+                Console.WriteLine($"Semantic Error: Expected bool expression, got {condition.ExpType}");
+            }
         }
     }
     public class WhileNode : AST
@@ -192,18 +230,25 @@ namespace mini_compiler
 
         public override void GenCode()
         {
+            int while_start = Compiler.label_num++;
+            int while_end = Compiler.label_num++;
+
+            Compiler.EmitCode($"L{while_start}:");
             condition.GenCode(); //pushing to stack condition result
-            Compiler.EmitCode("brfalse IF_FALSE");
-            body.GenCode();
+            Compiler.EmitCode($"brfalse L{while_end}");
+                body.GenCode();
+                Compiler.EmitCode($"br L{while_start}");                
+
+            Compiler.EmitCode($"L{while_end}:");
         }
 
         public override void СheckType()
         {
-            //if (condition.ExpType != "string")
-            //{
-            //    Compiler.errors += 1;
-            //    Console.WriteLine($"Semantic Error: Expected bool expression, got {condition.ExpType}");
-            //}
+            if (condition.ExpType != "bool")
+            {
+                Compiler.errors += 1;
+                Console.WriteLine($"Semantic Error: Expected bool expression, got {condition.ExpType}");
+            }
         }
     }
 

@@ -31,7 +31,7 @@ String		\"[^'\"'\n]*[^'\'\n]*\"
 
 "true"          { yylval.val=yytext; return (int)Tokens.BoolValue; }
 "false"         { yylval.val=yytext; return (int)Tokens.BoolValue; }
-{IntNumber}     { yylval.val=yytext; return (int)Tokens.IntNumber; Console.WriteLine((int)Tokens.IntNumber);}
+{IntNumber}     { yylval.val=yytext; return (int)Tokens.IntNumber;}
 {RealNumber}    { yylval.val=yytext; return (int)Tokens.RealNumber; }
 {Ident}         { yylval.val=yytext; return (int)Tokens.Ident; }
 {String}        { yylval.val=yytext; return (int)Tokens.String; }

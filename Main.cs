@@ -15,6 +15,8 @@ public class Compiler
         { IdentType.Int, "int32" }, { IdentType.Double, "float32" }, { IdentType.Bool, "bool" }
     };
 
+    public static int label_num = 0;
+
 
     public static int Main(string[] args)
     {
