@@ -20,9 +20,9 @@
 %token <val> Ident IntNumber RealNumber BoolValue String
 %token Int Double Bool
 
-%type <node> declaration statement write_expression read_expression 
+%type <node> declaration statement write_expression read_expression
 %type <node_list> declaration_list statement_list
-%type <bnode> expression assign_statement primary_expression term factor rterm pre
+%type <bnode> expression assign_statement primary_expression term factor unary_expression
 %type <con> values
 
 
@@ -58,38 +58,35 @@ assign_statement
 	;
 
 statement
-	: assign_statement ";"
-	| write_expression ";"
-	| read_expression ";"
-	| expression_statement
-	| "{" statement_list "}" {$$ = new Block($2==null? null : $2);}
+	: assign_statement ";" {Compiler.syntaxTree.Add($1);}
+	| write_expression ";" {Compiler.syntaxTree.Add($1);}
+	| read_expression ";" {Compiler.syntaxTree.Add($1);}
+	| expression_statement 
+	| "{" statement_list "}" {$$ = new Block($2==null? null : $2); Compiler.syntaxTree.Add($$);}
 	| Return ";" {Console.WriteLine("return;");}
-	| If "(" expression ")" statement {$$ = new IfNode($3, $5);}
-	| If "(" expression ")" statement Else statement  {$$ = new IfNode($3, $5, $7);}
-	| While "(" expression ")" statement {$$ = new WhileNode($3, $5);}
+	| If "(" expression ")" statement {$$ = new IfNode($3, $5); Compiler.syntaxTree.Add($$);}
+	| If "(" expression ")" statement Else statement  {$$ = new IfNode($3, $5, $7); Compiler.syntaxTree.Add($$);}
+	| While "(" expression ")" statement {$$ = new WhileNode($3, $5); Compiler.syntaxTree.Add($$);}
 	;
 
 expression
 	: term 
-	| expression "+" rterm { $$ = new BinaryNode($1, "add", $3);}
-	| expression "-" rterm { $$ = new BinaryNode($1, "sub", $3);}
+	| expression "+" term { $$ = new BinaryNode($1, "add", $3);}
+	| expression "-" term { $$ = new BinaryNode($1, "sub", $3);}
 	;
 
-term 
-	: rterm 
-	| pre
+
+term
+	: unary_expression
+	| term "*" unary_expression {$$ = new BinaryNode($1, "mul", $3);}
+	| term "/" unary_expression {$$ = new BinaryNode($1, "div", $3);}
 	;
 
-rterm
-	: factor
-	| term "*" factor {$$ = new BinaryNode($1, "mul", $3);}
-	| term "/" factor {$$ = new BinaryNode($1, "div", $3);}
-	;
-
-pre  
-	: "-" expression {$$ = new UnaryNode($2, "neg");}
-	| "~" expression {$$ = new UnaryNode($2, "not");}
-	| "!" expression {$$ = new UnaryNode($2, "ceq");}
+unary_expression  
+	: "-" factor {$$ = new UnaryNode($2, "neg");}
+	| "~" factor {$$ = new UnaryNode($2, "not");}
+	| "!" factor {$$ = new UnaryNode($2, "ceq");}
+	| factor
 	;
 
 factor

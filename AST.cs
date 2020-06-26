@@ -64,7 +64,7 @@ namespace mini_compiler
         {
             left_ident = to;
             right_node = node;
-            Compiler.syntaxTree.Add(this);
+           // Compiler.syntaxTree.Add(this);
         }
 
         public override string ExpType => right_node.ExpType;
@@ -122,7 +122,7 @@ namespace mini_compiler
         {
             Console.WriteLine($"printing var:");
             this.value = value;
-            Compiler.syntaxTree.Add(this);
+            //Compiler.syntaxTree.Add(this);
         }
 
         public override void GenCode()
@@ -144,7 +144,7 @@ namespace mini_compiler
         {
             Console.WriteLine($"printing str: {str}");
             this.str = str;
-            Compiler.syntaxTree.Add(this);
+            //Compiler.syntaxTree.Add(this);
         }
 
         public override void GenCode()
@@ -165,7 +165,7 @@ namespace mini_compiler
         public Read(LeafVarNode node)
         { 
             this.node = node;
-            Compiler.syntaxTree.Add(this);
+            //Compiler.syntaxTree.Add(this);
         }
 
         public override void GenCode()
@@ -192,7 +192,7 @@ namespace mini_compiler
             this.condition = condition;
             this.body = body;
             this.elsebody = elsebody;
-            Compiler.syntaxTree.Add(this);
+           // Compiler.syntaxTree.Add(this);
         }
 
         public override void GenCode()
@@ -225,7 +225,7 @@ namespace mini_compiler
         {
             this.condition = condition;
             this.body = body;
-            Compiler.syntaxTree.Add(this);
+            //Compiler.syntaxTree.Add(this);
         }
 
         public override void GenCode()
