@@ -1,6 +1,7 @@
 ﻿using QUT.Gppg;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Data;
 using System.IO;
 using System.Linq;
@@ -67,7 +68,7 @@ namespace mini_compiler
            // Compiler.syntaxTree.Add(this);
         }
 
-        public override string ExpType => right_node.ExpType;
+        public override string ExpOutType => right_node.ExpOutType;
 
         public override void GenCode()
         {
@@ -77,8 +78,10 @@ namespace mini_compiler
 
         public override void СheckType()
         {
+            right_node.СheckType();
+
             IdentType assigntTo = Compiler.SymbolTable[left_ident];
-            string assigntFrom = right_node.ExpType;
+            string assigntFrom = right_node.ExpOutType;
             if (assigntTo == IdentType.Double && assigntFrom == "bool")
             {
                 Compiler.errors += 1;
@@ -120,15 +123,15 @@ namespace mini_compiler
         Node value;
         public Write(Node value)
         {
-            Console.WriteLine($"printing var:");
             this.value = value;
             //Compiler.syntaxTree.Add(this);
         }
 
         public override void GenCode()
         {
+            value.СheckType();
             value.GenCode();
-            Compiler.EmitCode($"call void [mscorlib]System.Console::Write({value.ExpType})");
+            Compiler.EmitCode($"call void [mscorlib]System.Console::Write({value.ExpOutType})");
         }
 
         public override void СheckType()
@@ -170,9 +173,9 @@ namespace mini_compiler
 
         public override void GenCode()
         {
-            var type = char.ToUpper(node.ExpType[0]) + node.ExpType.Substring(1); //converting type, for ex: int32 -> Int32
+            var type = char.ToUpper(node.ExpOutType[0]) + node.ExpOutType.Substring(1); //converting type, for ex: int32 -> Int32
             Compiler.EmitCode($"call string [mscorlib]System.Console::ReadLine()");
-            Compiler.EmitCode($"call {node.ExpType} [mscorlib]System.{type}::Parse(string)");
+            Compiler.EmitCode($"call {node.ExpOutType} [mscorlib]System.{type}::Parse(string)");
             Compiler.EmitCode($"stloc {node.name}");
         }
 
@@ -210,10 +213,10 @@ namespace mini_compiler
 
         public override void СheckType()
         {
-            if (condition.ExpType != "bool")
+            if (condition.ExpOutType != "bool")
             {
                 Compiler.errors += 1;
-                Console.WriteLine($"Semantic Error: Expected bool expression, got {condition.ExpType}");
+                Console.WriteLine($"Semantic Error: Expected bool expression, got {condition.ExpOutType}");
             }
         }
     }
@@ -244,15 +247,13 @@ namespace mini_compiler
 
         public override void СheckType()
         {
-            if (condition.ExpType != "bool")
+            if (condition.ExpOutType != "bool")
             {
                 Compiler.errors += 1;
-                Console.WriteLine($"Semantic Error: Expected bool expression, got {condition.ExpType}");
+                Console.WriteLine($"Semantic Error: Expected bool expression, got {condition.ExpOutType}");
             }
         }
     }
-
-
 }
 
 

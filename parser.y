@@ -22,14 +22,14 @@
 
 %type <node> declaration statement write_expression read_expression
 %type <node_list> declaration_list statement_list
-%type <bnode> expression assign_statement primary_expression term factor unary_expression
+%type <bnode> expression assign_statement primary_expression multiplicative_exp factor unary_exp relation_exp additive_exp bit_exp
 %type <con> values
 
 
 %%
 
 start 
-	:  Program "{" declaration_list statement_list"}" {Console.WriteLine("Program started");}
+	:  Program "{" declaration_list statement_list"}"
 	;
 
 declaration_list
@@ -38,7 +38,7 @@ declaration_list
 	;
 
 declaration 
-	: types Ident ";" {$$ = new Declare($2, $1.type); Console.WriteLine("declared: " + $2);}
+	: types Ident ";" {$$ = new Declare($2, $1.type);}
 	;
 
 statement_list
@@ -70,22 +70,44 @@ statement
 	;
 
 expression
-	: term 
-	| expression "+" term { $$ = new BinaryNode($1, "add", $3);}
-	| expression "-" term { $$ = new BinaryNode($1, "sub", $3);}
+	: relation_exp
+	| expression "&&" relation_exp { $$ = new LogicalExpNode($1, "and", $3);}
+	| expression "||" relation_exp { $$ = new LogicalExpNode($1, "or", $3);}
+	;
+
+relation_exp
+	: additive_exp
+	| relation_exp "==" additive_exp { $$ = new RelationalExpNode($1, "ceq", $3);}
+	| relation_exp "!=" additive_exp { $$ = new RelationalExpNode($1, "and", $3);}
+	| relation_exp ">=" additive_exp { $$ = new RelationalExpNode($1, "clt", $3);}
+	| relation_exp ">" additive_exp { $$ = new RelationalExpNode($1, "cgt", $3);}
+	| relation_exp "<=" additive_exp { $$ = new RelationalExpNode($1, "cgt", $3);}
+	| relation_exp "<" additive_exp { $$ = new RelationalExpNode($1, "clt", $3);}
+	;
+
+additive_exp
+	: multiplicative_exp 
+	| additive_exp "+" multiplicative_exp { $$ = new ArithmeticExpNode($1, "add", $3);}
+	| additive_exp "-" multiplicative_exp { $$ = new ArithmeticExpNode($1, "sub", $3);}
 	;
 
 
-term
-	: unary_expression
-	| term "*" unary_expression {$$ = new BinaryNode($1, "mul", $3);}
-	| term "/" unary_expression {$$ = new BinaryNode($1, "div", $3);}
+multiplicative_exp
+	: bit_exp
+	| multiplicative_exp "*" bit_exp {$$ = new ArithmeticExpNode($1, "mul", $3);}
+	| multiplicative_exp "/" bit_exp {$$ = new ArithmeticExpNode($1, "div", $3);}
 	;
 
-unary_expression  
-	: "-" factor {$$ = new UnaryNode($2, "neg");}
-	| "~" factor {$$ = new UnaryNode($2, "not");}
-	| "!" factor {$$ = new UnaryNode($2, "ceq");}
+bit_exp
+	: unary_exp
+	| bit_exp "&" unary_exp {$$ = new BitExpNode($1, "and", $3);}
+	| bit_exp "|" unary_exp {$$ = new BitExpNode($1, "or", $3);}
+	;
+
+unary_exp  
+	: "-" factor {$$ = new UnaryMinus($2, "neg");}
+	| "~" factor {$$ = new BitNegation($2, "not");}
+	| "!" factor {$$ = new LogicNegation($2, "ceq");}
 	| factor
 	;
 
@@ -108,7 +130,7 @@ values
 
 write_expression 
 	: Write expression {$$ = new Write($2);}
-	| Write String {$$ = new WriteString($2); Console.WriteLine($2);}
+	| Write String {$$ = new WriteString($2);}
 	; 
 
 read_expression
