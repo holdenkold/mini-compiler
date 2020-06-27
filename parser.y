@@ -58,15 +58,15 @@ assign_statement
 	;
 
 statement
-	: assign_statement ";" {Compiler.syntaxTree.Add($1);}
-	| write_expression ";" {Compiler.syntaxTree.Add($1);}
-	| read_expression ";" {Compiler.syntaxTree.Add($1);}
-	| expression_statement 
+	: assign_statement ";" {$$ = $1; Compiler.syntaxTree.Add($1); Console.WriteLine("assign:");Console.WriteLine($$);}
+	| write_expression ";" {Compiler.syntaxTree.Add($1); Console.WriteLine("write:");Console.WriteLine($$);}
+	| read_expression ";" {Compiler.syntaxTree.Add($1); Console.WriteLine("read:");Console.WriteLine($$);}
+	| expression_statement  {Console.WriteLine("expr:");Console.WriteLine($$);}
 	| "{" statement_list "}" {$$ = new Block($2==null? null : $2); Compiler.syntaxTree.Add($$);}
 	| Return ";" {Console.WriteLine("return;");}
 	| If "(" expression ")" statement {$$ = new IfNode($3, $5); Compiler.syntaxTree.Add($$);}
 	| If "(" expression ")" statement Else statement  {$$ = new IfNode($3, $5, $7); Compiler.syntaxTree.Add($$);}
-	| While "(" expression ")" statement {$$ = new WhileNode($3, $5); Compiler.syntaxTree.Add($$);}
+	| While "(" expression ")" statement {$$ = new WhileNode($3, $5); Compiler.syntaxTree.Add($$); Console.WriteLine("while:");Console.WriteLine($5);}
 	;
 
 expression
@@ -78,11 +78,11 @@ expression
 relation_exp
 	: additive_exp
 	| relation_exp "==" additive_exp { $$ = new RelationalExpNode($1, "ceq", $3);}
-	| relation_exp "!=" additive_exp { $$ = new RelationalExpNode($1, "and", $3);}
-	| relation_exp ">=" additive_exp { $$ = new RelationalExpNode($1, "clt", $3);}
+	| relation_exp "!=" additive_exp { $$ = new RelationalExpNode($1, "ceq", $3, true);}
 	| relation_exp ">" additive_exp { $$ = new RelationalExpNode($1, "cgt", $3);}
-	| relation_exp "<=" additive_exp { $$ = new RelationalExpNode($1, "cgt", $3);}
+	| relation_exp ">=" additive_exp { $$ = new RelationalExpNode($1, "clt", $3, true);}
 	| relation_exp "<" additive_exp { $$ = new RelationalExpNode($1, "clt", $3);}
+	| relation_exp "<=" additive_exp { $$ = new RelationalExpNode($1, "cgt", $3, true);}
 	;
 
 additive_exp

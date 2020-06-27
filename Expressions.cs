@@ -10,16 +10,7 @@ namespace mini_compiler
     public class BitExpNode : BinaryNode
     {
         public BitExpNode(Node left, string op, Node right) : base(left, op, right) { }
-
         public override string ExpOutType => "int32";
-
-        //public override void GenCode()
-        //{
-        //    left.GenCode();
-        //    right.GenCode();
-        //    Compiler.EmitCode(op);
-        //}
-
         public override void СheckType()
         {
             if (left.ExpOutType != "int32" || right.ExpOutType != "int32")
@@ -32,7 +23,6 @@ namespace mini_compiler
         bool right_convert = false;
         bool left_convert = false;
         public ArithmeticExpNode(Node left, string op, Node right) : base(left, op, right) { }
-
         public override void GenCode()
         {
             left.GenCode();
@@ -45,7 +35,6 @@ namespace mini_compiler
 
             Compiler.EmitCode(op);
         }
-
         public override void СheckType()
         {
             if (left.ExpOutType == "bool" || right.ExpOutType == "bool")
@@ -65,13 +54,18 @@ namespace mini_compiler
 
     public class RelationalExpNode : BinaryNode
     {
-        public RelationalExpNode(Node left, string op, Node right) : base(left, op, right) { }
-
+        bool eq;
+        public RelationalExpNode(Node left, string op, Node right, bool eq = false) : base(left, op, right) { this.eq = eq; }
         public override void GenCode()
         {
             left.GenCode();
             right.GenCode();
             Compiler.EmitCode(op);
+            if (eq)
+            {
+                Compiler.EmitCode("ldc.i4.0");
+                Compiler.EmitCode("ceq");
+            }
         }
 
         public override string ExpOutType => "bool";
@@ -85,12 +79,6 @@ namespace mini_compiler
     public class LogicalExpNode : BinaryNode
     {
         public LogicalExpNode(Node left, string op, Node right) : base(left, op, right) { }
-        //public override void GenCode()
-        //{
-        //    left.GenCode();
-        //    right.GenCode();
-        //    Compiler.EmitCode(op);
-        //}
         public override string ExpOutType => "bool";
         public override void СheckType()
         {
@@ -140,6 +128,12 @@ namespace mini_compiler
                 ReportError();
         }
 
+        public override void GenCode()
+        {
+            exp.GenCode();
+            Compiler.EmitCode("ldc.i4 0");
+            Compiler.EmitCode(op);
+        }
         public override string ExpOutType => "bool";
     }
 
