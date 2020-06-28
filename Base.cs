@@ -35,7 +35,7 @@ namespace mini_compiler
                     Compiler.EmitCode($"ldc.i4 {val}");
                     break;
                 case IdentType.Double:
-                    Compiler.EmitCode($"ldc.r4 {value}");
+                    Compiler.EmitCode($"ldc.r8 {value}");
                     break;
             }
         }
