@@ -51,6 +51,8 @@ public class Compiler
         GenProlog();
         parser.Parse();
 
+        syntaxTree.RemoveAll(el => el == null);
+
         syntaxTree.ForEach(n => n.СheckType());
         if (errors == 0)
         {

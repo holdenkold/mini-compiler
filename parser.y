@@ -20,8 +20,8 @@
 %token <val> Ident IntNumber RealNumber BoolValue String
 %token Int Double Bool
 
-%type <node> declaration statement write_expression read_expression expression_statement
-%type <node_list> declaration_list statement_list
+%type <node> declaration statement write_expression read_expression 
+%type <node_list> declaration_list statement_list block_statement_list
 %type <bnode> expression assign_statement primary_expression multiplicative_exp factor unary_exp relation_exp additive_exp bit_exp
 %type <con> values
 
@@ -46,12 +46,6 @@ statement_list
 	| { $$ = new List<AST>();}
 	;
 
-
-expression_statement
-	: ";"
-	| expression ";" {$$ = $1;}
-	;
-
 assign_statement
 	: Ident "=" expression { $$ = new Assign($1, $3);}
 	| Ident "=" assign_statement {$$ = new Assign($1, $3);}
@@ -62,12 +56,17 @@ statement
 	: assign_statement ";" {$$ = $1;}
 	| write_expression ";" {Console.WriteLine($$);}
 	| read_expression ";" {Console.WriteLine($$);}
-	| expression_statement  {Console.WriteLine("expr:");Console.WriteLine($$);}
-	| "{" statement_list "}" {$$ = new Block($2==null? null : $2);}
+	| expression ";" {$$ = $1;} 
+	| "{" block_statement_list "}" {$$ = new Block($2==null? null : $2);}
 	| Return ";" {$$ = new ReturnNode(); Console.WriteLine("return;");}
 	| If "(" expression ")" statement {$$ = new IfNode($3, $5); }
 	| If "(" expression ")" statement Else statement  {$$ = new IfNode($3, $5, $7); }
 	| While "(" expression ")" statement {$$ = new WhileNode($3, $5);}
+	;
+
+block_statement_list
+	: block_statement_list statement {$1.Add($2); $$ = $1;}
+	| { $$ = new List<AST>();}
 	;
 
 expression
