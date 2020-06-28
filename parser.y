@@ -20,7 +20,7 @@
 %token <val> Ident IntNumber RealNumber BoolValue String
 %token Int Double Bool
 
-%type <node> declaration statement write_expression read_expression expression_statement
+%type <node> declaration statement write_expression read_expression expression_statement 
 %type <node_list> declaration_list statement_list
 %type <bnode> expression assign_statement primary_expression multiplicative_exp factor unary_exp relation_exp additive_exp bit_exp
 %type <con> values
@@ -29,7 +29,7 @@
 %%
 
 start 
-	:  Program "{" declaration_list statement_list"}"
+	:  Program "{" declaration_list statement_list"}" { Compiler.root = new Program($3, $4);}
 	;
 
 declaration_list
@@ -59,15 +59,15 @@ assign_statement
 
 
 statement
-	: assign_statement ";" {$$ = $1; Compiler.syntaxTree.Add($1); Console.WriteLine("assign:");Console.WriteLine($$);}
-	| write_expression ";" {Compiler.syntaxTree.Add($1); Console.WriteLine("write:");Console.WriteLine($$);}
-	| read_expression ";" {Compiler.syntaxTree.Add($1); Console.WriteLine("read:");Console.WriteLine($$);}
-	| expression_statement  {Compiler.syntaxTree.Add($1); Console.WriteLine("expr:");Console.WriteLine($$);}
-	| "{" statement_list "}" {$$ = new Block($2==null? null : $2); Compiler.syntaxTree.Add($$);}
+	: assign_statement ";" {$$ = $1; Console.WriteLine("assign:");Console.WriteLine($$);}
+	| write_expression ";" {Console.WriteLine("write:");Console.WriteLine($$);}
+	| read_expression ";" {Console.WriteLine("read:");Console.WriteLine($$);}
+	| expression_statement  {Console.WriteLine("expr:");Console.WriteLine($$);}
+	| "{" statement_list "}" {$$ = new Block($2==null? null : $2); }
 	| Return ";" {$$ = new ReturnNode(); Console.WriteLine("return;");}
-	| If "(" expression ")" statement {$$ = new IfNode($3, $5); Compiler.syntaxTree.Add($$);}
-	| If "(" expression ")" statement Else statement  {$$ = new IfNode($3, $5, $7); Compiler.syntaxTree.Add($$);}
-	| While "(" expression ")" statement {$$ = new WhileNode($3, $5); Compiler.syntaxTree.Add($$); Console.WriteLine("while:");Console.WriteLine($5);}
+	| If "(" expression ")" statement {$$ = new IfNode($3, $5);}
+	| If "(" expression ")" statement Else statement  {$$ = new IfNode($3, $5, $7);}
+	| While "(" expression ")" statement {$$ = new WhileNode($3, $5); Console.WriteLine("while:");Console.WriteLine($5);}
 	;
 
 expression

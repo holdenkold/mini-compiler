@@ -8,7 +8,7 @@ public class Compiler
     public static int errors = 0;
 
     public static List<string> source;
-    public static List<AST> syntaxTree = new List<AST>();
+    public static AST root;
     public static Dictionary<string, IdentType> SymbolTable = new Dictionary<string, IdentType>();
 
     public static Dictionary<IdentType, string> IdentTypeMap = new Dictionary<IdentType, string> {
@@ -51,10 +51,10 @@ public class Compiler
         GenProlog();
         parser.Parse();
 
-        syntaxTree.ForEach(n => n.СheckType());
+        root.СheckType();
         if (errors == 0)
         {
-            syntaxTree.ForEach(n => n.GenCode());
+            root.GenCode();
         }
             GenEpilog();
             sw.Close();

@@ -25,7 +25,6 @@ namespace mini_compiler
         {
             this.type = type;
             varName = name;
-            Compiler.syntaxTree.Add(this);
         }
 
         public override void GenCode()
@@ -234,15 +233,18 @@ namespace mini_compiler
 
         public override void GenCode()
         {
+            var else_label = $"L{Compiler.label_num++}";
+            var end_if_label = $"L{Compiler.label_num++}";
             condition.GenCode(); //pushing to stack condition result
-            Compiler.EmitCode($"brfalse L{Compiler.label_num}");
+            Compiler.EmitCode($"brfalse {else_label}");
             body.GenCode();
+            Compiler.EmitCode($"br {end_if_label}");
 
-            Compiler.EmitCode($"L{Compiler.label_num}:");
+            Compiler.EmitCode($"{else_label}:");
             if (elsebody != null)  // ELSE
                 elsebody.GenCode();
 
-            Compiler.label_num++;
+            Compiler.EmitCode($"{end_if_label}:");
         }
 
         public override void СheckType()
