@@ -6,6 +6,7 @@ using System.Data;
 using System.IO;
 using System.Linq;
 using System.Runtime.Remoting.Messaging;
+using System.Security.Permissions;
 using System.Xml.Schema;
 
 namespace mini_compiler
@@ -24,8 +25,6 @@ namespace mini_compiler
         {
             this.type = type;
             varName = name;
-
-            Compiler.SymbolTable[name] = type;
             Compiler.syntaxTree.Add(this);
         }
 
@@ -34,26 +33,32 @@ namespace mini_compiler
             switch (type)
             {
                 case IdentType.Int:
-                    Compiler.EmitCode($".locals init ( int32 {varName} )"); //declare
+                    Compiler.EmitCode($".locals init ( int32 v_{varName} )"); //declare
                     Compiler.EmitCode("ldc.i4.0"); //pushing 0 on stack
-                    Compiler.EmitCode($"stloc {varName}"); //initialisation variable with 0 (linking varName with last value on stack)
+                    Compiler.PullStack(varName); //initialisation variable with 0 (linking varName with last value on stack)
                     break;
                 case IdentType.Bool:
-                    Compiler.EmitCode($".locals init ( int32 {varName} )"); //declare
+                    Compiler.EmitCode($".locals init ( int32 v_{varName} )"); //declare
                     Compiler.EmitCode("ldc.i4.0"); //pushing 0 on stack
-                    Compiler.EmitCode($"stloc {varName}"); //initialisation variable with 0 (linking varName with last value on stack)
+                    Compiler.PullStack(varName); //initialisation variable with 0 (linking varName with last value on stack)
                     break;
                 case IdentType.Double:
-                    Compiler.EmitCode($".locals init ( float64 {varName} )"); //declare
+                    Compiler.EmitCode($".locals init ( float64 v_{varName} )"); //declare
                     Compiler.EmitCode("ldc.r8 0.0"); //pushing 0 on stack
-                    Compiler.EmitCode($"stloc {varName}"); //initialisation variable with 0 (linking varName with last value on stack)
+                    Compiler.PullStack(varName); //initialisation variable with 0 (linking varName with last value on stack)
                     break;
             }
         }
 
         public override void СheckType()
         {
-            return;
+            if (Compiler.SymbolTable.ContainsKey(varName))
+            {
+                Compiler.errors += 1;
+                Console.WriteLine("variable already declared");
+                return;
+            }
+            Compiler.SymbolTable[varName] = type;
         }
     }
 
@@ -61,6 +66,7 @@ namespace mini_compiler
     {
         string left_ident;
         Node right_node;
+        bool covert = false;
         public Assign(string to, Node node)
         {
             left_ident = to;
@@ -73,19 +79,33 @@ namespace mini_compiler
         public override void GenCode()
         {
             right_node.GenCode();
-            Compiler.EmitCode($"stloc {left_ident}");
+            if (covert)
+                Compiler.EmitCode("conv.r8");
+            Compiler.PullStack(left_ident);
         }
 
         public override void СheckType()
         {
             right_node.СheckType();
 
-            IdentType assigntTo = Compiler.SymbolTable[left_ident];
-            string assigntFrom = right_node.ExpOutType;
-            if (assigntTo == IdentType.Double && assigntFrom == "bool")
+            if (!Compiler.SymbolTable.ContainsKey(left_ident))
             {
                 Compiler.errors += 1;
-                Console.WriteLine("Semantic Error: Expected int or double for assigment, got bool");
+                Console.WriteLine("undeclared variable");
+                return;
+            }
+
+            IdentType assigntTo = Compiler.SymbolTable[left_ident];
+            string assigntFrom = right_node.ExpOutType;
+            if (assigntTo == IdentType.Double )
+            {
+                if (assigntFrom == "bool")
+                {
+                    Compiler.errors += 1;
+                    Console.WriteLine("Semantic Error: Expected int or double for assigment, got bool");
+                }
+                else
+                    covert = true;
             }
             else if (assigntTo == IdentType.Int && assigntFrom != "int32")
             {
@@ -129,14 +149,26 @@ namespace mini_compiler
 
         public override void GenCode()
         {
-            value.СheckType();
-            value.GenCode();
-            Compiler.EmitCode($"call void [mscorlib]System.Console::Write({value.ExpOutType})");
+            if (value.ExpOutType == "float64")
+            {
+
+                Compiler.EmitCode("call class [mscorlib]System.Globalization.CultureInfo [mscorlib]System.Globalization.CultureInfo::get_InvariantCulture()");
+                Compiler.EmitCode("ldstr \"{0:0.000000}\"");
+                value.GenCode();
+                Compiler.EmitCode("box [mscorlib]System.Double");
+                Compiler.EmitCode("call string [mscorlib]System.String::Format(class [mscorlib]System.IFormatProvider, string, object)");
+                Compiler.EmitCode("call void [mscorlib]System.Console::Write(string)");
+            }
+            else
+            {
+                value.GenCode();
+                Compiler.EmitCode($"call void [mscorlib]System.Console::Write({value.ExpOutType})");
+            }
         }
 
         public override void СheckType()
         {
-            return;
+            value.СheckType();
         }
     }
 
@@ -176,11 +208,13 @@ namespace mini_compiler
             var type = char.ToUpper(node.ExpOutType[0]) + node.ExpOutType.Substring(1); //converting type, for ex: int32 -> Int32
             Compiler.EmitCode($"call string [mscorlib]System.Console::ReadLine()");
             Compiler.EmitCode($"call {node.ExpOutType} [mscorlib]System.{type}::Parse(string)");
-            Compiler.EmitCode($"stloc {node.name}");
+            //Compiler.EmitCode($"stloc {node.name}");
+            Compiler.PullStack(node.name);
         }
 
         public override void СheckType()
         {
+            node.СheckType();
             return;
         }
     }

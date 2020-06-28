@@ -12,11 +12,10 @@ public class Compiler
     public static Dictionary<string, IdentType> SymbolTable = new Dictionary<string, IdentType>();
 
     public static Dictionary<IdentType, string> IdentTypeMap = new Dictionary<IdentType, string> {
-        { IdentType.Int, "int32" }, { IdentType.Double, "float32" }, { IdentType.Bool, "bool" }
+        { IdentType.Int, "int32" }, { IdentType.Double, "float64" }, { IdentType.Bool, "bool" }
     };
 
     public static int label_num = 0;
-
 
     public static int Main(string[] args)
     {
@@ -53,19 +52,45 @@ public class Compiler
         parser.Parse();
 
         syntaxTree.ForEach(n => n.СheckType());
-        syntaxTree.ForEach(n => n.GenCode());
-
-        GenEpilog();
-        sw.Close();
-        source.Close();
         if (errors == 0)
-            Console.WriteLine("  compilation successful\n");
+        {
+            syntaxTree.ForEach(n => n.GenCode());
+        }
+            GenEpilog();
+            sw.Close();
+            source.Close();
+        
+        if (errors == 0)
+            Console.WriteLine("COMPILATION SUCCESFUL\n");
         else
         {
             Console.WriteLine($"\n  {errors} errors detected\n");
             File.Delete(file + ".il");
         }
         return errors == 0 ? 0 : 2;
+    }
+
+
+    public static void PullStack(string var_name)
+    {
+        if (!SymbolTable.ContainsKey(var_name))
+        {
+            errors++;
+            Console.WriteLine("undeclared variable");
+
+        }
+        EmitCode($"stloc v_{var_name}");
+    }
+
+    public static void PushStack(string var_name)
+    {
+        if (!SymbolTable.ContainsKey(var_name))
+        {
+            errors++;
+            Console.WriteLine("undeclared variable");
+
+        }
+        EmitCode($"ldloc v_{var_name}");
     }
 
     public static void EmitCode(string instr = null) => sw.WriteLine(instr);

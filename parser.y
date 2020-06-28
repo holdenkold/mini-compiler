@@ -20,7 +20,7 @@
 %token <val> Ident IntNumber RealNumber BoolValue String
 %token Int Double Bool
 
-%type <node> declaration statement write_expression read_expression
+%type <node> declaration statement write_expression read_expression expression_statement
 %type <node_list> declaration_list statement_list
 %type <bnode> expression assign_statement primary_expression multiplicative_exp factor unary_exp relation_exp additive_exp bit_exp
 %type <con> values
@@ -49,7 +49,7 @@ statement_list
 
 expression_statement
 	: ";"
-	| expression ";"
+	| expression ";" {$$ = $1;}
 	;
 
 assign_statement
@@ -57,13 +57,14 @@ assign_statement
 	| Ident "=" assign_statement {$$ = new Assign($1, $3);}
 	;
 
+
 statement
 	: assign_statement ";" {$$ = $1; Compiler.syntaxTree.Add($1); Console.WriteLine("assign:");Console.WriteLine($$);}
 	| write_expression ";" {Compiler.syntaxTree.Add($1); Console.WriteLine("write:");Console.WriteLine($$);}
 	| read_expression ";" {Compiler.syntaxTree.Add($1); Console.WriteLine("read:");Console.WriteLine($$);}
-	| expression_statement  {Console.WriteLine("expr:");Console.WriteLine($$);}
+	| expression_statement  {Compiler.syntaxTree.Add($1); Console.WriteLine("expr:");Console.WriteLine($$);}
 	| "{" statement_list "}" {$$ = new Block($2==null? null : $2); Compiler.syntaxTree.Add($$);}
-	| Return ";" {Console.WriteLine("return;");}
+	| Return ";" {$$ = new ReturnNode(); Console.WriteLine("return;");}
 	| If "(" expression ")" statement {$$ = new IfNode($3, $5); Compiler.syntaxTree.Add($$);}
 	| If "(" expression ")" statement Else statement  {$$ = new IfNode($3, $5, $7); Compiler.syntaxTree.Add($$);}
 	| While "(" expression ")" statement {$$ = new WhileNode($3, $5); Compiler.syntaxTree.Add($$); Console.WriteLine("while:");Console.WriteLine($5);}
@@ -108,6 +109,8 @@ unary_exp
 	: "-" factor {$$ = new UnaryMinus($2, "neg");}
 	| "~" factor {$$ = new BitNegation($2, "not");}
 	| "!" factor {$$ = new LogicNegation($2, "ceq");}
+	| "(" Int ")" factor {$$ = new ConvertToInt($4);}
+	| "(" Double ")" factor {$$ = new ConvertToDouble($4);}
 	| factor
 	;
 

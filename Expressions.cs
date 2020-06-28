@@ -39,9 +39,9 @@ namespace mini_compiler
         {
             if (left.ExpOutType == "bool" || right.ExpOutType == "bool")
                 ReportError();
-            else if (left.ExpOutType == "float32" || right.ExpOutType == "float32")
+            else if (left.ExpOutType == "float64" || right.ExpOutType == "float64")
             {
-                exp_out_type = "float32";
+                exp_out_type = "float64";
                 if (left.ExpOutType == "int32")
                     left_convert = true;
                 if (right.ExpOutType == "int32")
@@ -55,11 +55,18 @@ namespace mini_compiler
     public class RelationalExpNode : BinaryNode
     {
         bool eq;
+        bool right_convert = false;
+        bool left_convert = false;
         public RelationalExpNode(Node left, string op, Node right, bool eq = false) : base(left, op, right) { this.eq = eq; }
         public override void GenCode()
         {
             left.GenCode();
+            if (left_convert)
+                Compiler.EmitCode("conv.r8");
             right.GenCode();
+
+            if (right_convert)
+                Compiler.EmitCode("conv.r8");
             Compiler.EmitCode(op);
             if (eq)
             {
@@ -73,6 +80,16 @@ namespace mini_compiler
         {
             if (left.ExpOutType == "bool" || right.ExpOutType == "bool")
                 ReportError();
+            else if (left.ExpOutType == "float64" || right.ExpOutType == "float64")
+            {
+                exp_out_type = "float64";
+                if (left.ExpOutType == "int32")
+                    left_convert = true;
+                if (right.ExpOutType == "int32")
+                    right_convert = true;
+            }
+            else
+                exp_out_type = "int32";
         }
     }
 
@@ -84,6 +101,22 @@ namespace mini_compiler
         {
             if (left.ExpOutType != "bool" || right.ExpOutType != "bool")
                 ReportError();
+        }
+        public override void GenCode()
+        {
+            var label = $"L{Compiler.label_num++}";
+            left.GenCode();
+            //Compiler.EmitCode("ldc.i4.1");
+            //Compiler.EmitCode("ceq");
+            //if (op == "and")
+            //    Compiler.EmitCode($"brfalse {label}");
+            //else if (op == "or")
+            //    Compiler.EmitCode($"brtrue {label}");
+
+            //left.GenCode();
+            right.GenCode();
+            Compiler.EmitCode(op);
+            Compiler.EmitCode($"{label}:");
         }
     }
 
@@ -137,47 +170,56 @@ namespace mini_compiler
         public override string ExpOutType => "bool";
     }
 
-    public class ConvertToInt : UnaryNode
+    public class ConvertToInt : Node
     {
-        public ConvertToInt(Node exp, string op) : base(exp, op) { }
+        Node exp;
+        public ConvertToInt(Node exp) => this.exp = exp;
 
         public override string ExpOutType => "int32";
 
         public override void GenCode()
         {
+            exp.GenCode();
             switch (exp.ExpOutType)
             {
                 case "int32":
-
                     break;
                 case "bool":
-                   
+                    Compiler.EmitCode("conv.i4");
                     break;
                 case "float64":
+                    Compiler.EmitCode("conv.i4"); //TO DO:
                     break;
             }
         }
+
+        public override void СheckType() => exp.СheckType();
     }
 
-    public class ConvertToDouble : UnaryNode
+    public class ConvertToDouble : Node
     {
-        public ConvertToDouble(Node exp, string op) : base(exp, op) { }
+        Node exp;
+        public ConvertToDouble(Node exp) => this.exp = exp;
 
         public override string ExpOutType => "float64";
 
         public override void GenCode()
         {
+            exp.GenCode();
             switch (exp.ExpOutType)
             {
                 case "int32":
-
+                    Compiler.EmitCode("conv.r8"); //TO DO:
                     break;
                 case "bool":
+                    Compiler.EmitCode("conv.r8"); //TO DO:
                     break;
                 case "float64":
                     break;
             }
         }
+
+        public override void СheckType() => exp.СheckType();
     }
 
     #endregion

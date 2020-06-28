@@ -37,7 +37,7 @@ namespace mini_compiler
                 case IdentType.Double:
                     Compiler.EmitCode($"ldc.r4 {value}");
                     break;
-            }           
+            }
         }
     }
 
@@ -46,6 +46,18 @@ namespace mini_compiler
         public abstract string ExpOutType { get; }
     }
 
+    public class ReturnNode : AST
+    {
+        public override void GenCode()
+        {
+            Compiler.EmitCode("ret");
+        }
+
+        public override void СheckType()
+        {
+            return;
+        }
+    }
     public class LeafValNode : Node
     {
         Constant value;
@@ -72,13 +84,17 @@ namespace mini_compiler
             this.name = name;
         }
 
-        public override void GenCode() => Compiler.EmitCode($"ldloc {name}");
+        public override void GenCode() => Compiler.PushStack(name); // Compiler.EmitCode($"ldloc {name}");
 
         public override string ExpOutType => Compiler.IdentTypeMap[Compiler.SymbolTable[name]];
 
         public override void СheckType()
         {
-            return;
+            if (!Compiler.SymbolTable.ContainsKey(name))
+            {
+                Compiler.errors++;
+                Console.WriteLine("undeclared variable");
+            }
         }
     }
 
