@@ -25,13 +25,15 @@ namespace mini_compiler
         public ArithmeticExpNode(Node left, string op, Node right) : base(left, op, right) { }
         public override void GenCode()
         {
-            left.GenCode();
             if (left_convert)
-                Compiler.EmitCode("conv.r8");
-            right.GenCode();
+                left.GenDoubleCode();
+            else
+                left.GenCode();
 
             if(right_convert)
-                Compiler.EmitCode("conv.r8");
+                right.GenDoubleCode();
+            else
+                right.GenCode();
 
             Compiler.EmitCode(op);
         }
@@ -60,13 +62,16 @@ namespace mini_compiler
         public RelationalExpNode(Node left, string op, Node right, bool eq = false) : base(left, op, right) { this.eq = eq; }
         public override void GenCode()
         {
-            left.GenCode();
             if (left_convert)
-                Compiler.EmitCode("conv.r8");
-            right.GenCode();
+                left.GenDoubleCode();
+            else
+                left.GenCode();
 
             if (right_convert)
-                Compiler.EmitCode("conv.r8");
+                right.GenDoubleCode();
+            else
+                right.GenCode();
+
             Compiler.EmitCode(op);
             if (eq)
             {
@@ -136,6 +141,7 @@ namespace mini_compiler
                 ReportError();
             exp_out_type = exp.ExpOutType;
         }
+        public override string ExpOutType => exp.ExpOutType;
     }
 
     public class BitNegation : UnaryNode

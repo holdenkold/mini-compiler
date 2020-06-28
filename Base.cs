@@ -44,6 +44,16 @@ namespace mini_compiler
     public abstract class Node : AST
     {
         public abstract string ExpOutType { get; }
+        public void GenDoubleCode()
+        {
+            GenCode();
+            Compiler.EmitCode("conv.r8");
+        }
+        public void GenIntCode()
+        {
+            GenCode();
+            Compiler.EmitCode("conv.i4");
+        }
     }
 
     public class ReturnNode : AST

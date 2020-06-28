@@ -111,15 +111,6 @@ public class Compiler
         EmitCode(".try");
         EmitCode("{");
         EmitCode();
-
-        EmitCode("// prolog");
-        EmitCode(".locals init ( float64 temp )");
-        for (char c = 'a'; c <= 'z'; ++c)
-        {
-            EmitCode($".locals init ( int32 _i{c} )");
-            EmitCode($".locals init ( float64 _r{c} )");
-        }
-        EmitCode();
     }
 
     private static void GenEpilog()

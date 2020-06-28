@@ -79,9 +79,12 @@ namespace mini_compiler
 
         public override void GenCode()
         {
-            right_node.GenCode();
+            
             if (covert)
-                Compiler.EmitCode("conv.r8");
+                right_node.GenDoubleCode();
+            else
+                right_node.GenCode();
+
             Compiler.PullStack(left_ident);
         }
 
