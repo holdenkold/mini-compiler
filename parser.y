@@ -106,11 +106,11 @@ bit_exp
 	;
 
 unary_exp  
-	: "-" factor {$$ = new UnaryMinus($2, "neg");}
-	| "~" factor {$$ = new BitNegation($2, "not");}
-	| "!" factor {$$ = new LogicNegation($2, "ceq");}
-	| "(" Int ")" factor {$$ = new ConvertToInt($4);}
-	| "(" Double ")" factor {$$ = new ConvertToDouble($4);}
+	: "-" unary_exp {$$ = new UnaryMinus($2, "neg");}
+	| "~" unary_exp {$$ = new BitNegation($2, "not");}
+	| "!" unary_exp {$$ = new LogicNegation($2, "ceq");}
+	| "(" Int ")" unary_exp {$$ = new ConvertToInt($4);}
+	| "(" Double ")" unary_exp {$$ = new ConvertToDouble($4);}
 	| factor
 	;
 
