@@ -89,6 +89,7 @@ namespace mini_compiler
     public class LeafVarNode : Node
     {
         public string name;
+        public string exp_out_type = null;
         public LeafVarNode(string name)
         {
             this.name = name;
@@ -96,7 +97,7 @@ namespace mini_compiler
 
         public override void GenCode() => Compiler.PushStack(name); // Compiler.EmitCode($"ldloc {name}");
 
-        public override string ExpOutType => Compiler.IdentTypeMap[Compiler.SymbolTable[name]];
+        public override string ExpOutType => exp_out_type;
 
         public override void СheckType()
         {
@@ -104,6 +105,10 @@ namespace mini_compiler
             {
                 Compiler.errors++;
                 Console.WriteLine("undeclared variable");
+            }
+            else
+            {
+                exp_out_type = Compiler.IdentTypeMap[Compiler.SymbolTable[name]];
             }
         }
     }

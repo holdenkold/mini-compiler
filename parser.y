@@ -130,7 +130,7 @@ values
 	
 
 write_expression 
-	: Write expression {$$ = new Write($2);}
+	: Write expression_statement {$$ = new Write($2);}
 	| Write String {$$ = new WriteString($2);}
 	; 
 

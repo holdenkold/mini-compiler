@@ -110,6 +110,7 @@ public class Compiler
         EmitCode(".entrypoint");
         EmitCode(".try");
         EmitCode("{");
+        EmitCode(".maxstack 64");
         EmitCode();
     }
 

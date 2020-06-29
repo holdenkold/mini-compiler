@@ -129,14 +129,12 @@ namespace mini_compiler
         {
             var label = $"L{Compiler.label_num++}";
             left.GenCode();
-            //Compiler.EmitCode("ldc.i4.1");
-            //Compiler.EmitCode("ceq");
-            //if (op == "and")
-            //    Compiler.EmitCode($"brfalse {label}");
-            //else if (op == "or")
-            //    Compiler.EmitCode($"brtrue {label}");
+            Compiler.EmitCode("dup");
+            if (op == "and")
+                Compiler.EmitCode($"brfalse {label}");
+            else if (op == "or")
+                Compiler.EmitCode($"brtrue {label}");
 
-            //left.GenCode();
             right.GenCode();
             Compiler.EmitCode(op);
             Compiler.EmitCode($"{label}:");

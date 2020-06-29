@@ -227,6 +227,8 @@ namespace mini_compiler
         public override void GenCode()
         {
             var type = char.ToUpper(node.ExpOutType[0]) + node.ExpOutType.Substring(1); //converting type, for ex: int32 -> Int32
+            if (node.ExpOutType == "bool")
+                type = "Boolean";
             Compiler.EmitCode($"call string [mscorlib]System.Console::ReadLine()");
             Compiler.EmitCode($"call {node.ExpOutType} [mscorlib]System.{type}::Parse(string)");
             //Compiler.EmitCode($"stloc {node.name}");
@@ -309,6 +311,10 @@ namespace mini_compiler
 
         public override void СheckType()
         {
+            condition.СheckType();
+            body.СheckType();
+
+
             if (condition.ExpOutType != "bool")
             {
                 Compiler.errors += 1;
