@@ -83,8 +83,9 @@ namespace mini_compiler
             else
                 right_node.GenCode();
 
+            Compiler.EmitCode("dup");
             Compiler.PullStack(left_ident);
-            Compiler.PushStack(left_ident); // push on stack assigned value 
+            //Compiler.PushStack(left_ident); // push on stack assigned value 
         }
 
         public override void СheckType()
