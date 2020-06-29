@@ -229,6 +229,9 @@ namespace mini_compiler
             var type = char.ToUpper(node.ExpOutType[0]) + node.ExpOutType.Substring(1); //converting type, for ex: int32 -> Int32
             if (node.ExpOutType == "bool")
                 type = "Boolean";
+            else if (node.ExpOutType == "float64")
+                type = "Double";
+
             Compiler.EmitCode($"call string [mscorlib]System.Console::ReadLine()");
             Compiler.EmitCode($"call {node.ExpOutType} [mscorlib]System.{type}::Parse(string)");
             //Compiler.EmitCode($"stloc {node.name}");
