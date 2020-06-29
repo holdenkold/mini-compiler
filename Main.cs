@@ -127,5 +127,4 @@ public class Compiler
         EmitCode("EndMain: ret");
         EmitCode("}");
     }
-
 }

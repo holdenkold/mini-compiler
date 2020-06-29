@@ -47,8 +47,7 @@ statement_list
 	;
 
 expression_statement
-	: Ident "=" expression { $$ = new Assign($1, $3);}
-	| Ident "=" expression_statement {$$ = new Assign($1, $3);}
+	: Ident "=" expression_statement {$$ = new Assign($1, $3);}
 	| expression  {$$ = $1;}
 	;
 
