@@ -90,7 +90,7 @@ namespace mini_compiler
             left.СheckType();
             right.СheckType();
 
-            if (left.ExpOutType == "bool" || right.ExpOutType == "bool")
+            if ((left.ExpOutType == "bool" || right.ExpOutType == "bool") && (op != "ceq"))
                 ReportError();
             else if (left.ExpOutType == "float64" || right.ExpOutType == "float64")
             {
