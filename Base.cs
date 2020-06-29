@@ -60,7 +60,7 @@ namespace mini_compiler
     {
         public override void GenCode()
         {
-            Compiler.EmitCode("ret");
+            Compiler.EmitCode("leave EndMain");
         }
 
         public override void СheckType()
