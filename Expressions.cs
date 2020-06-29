@@ -37,8 +37,12 @@ namespace mini_compiler
 
             Compiler.EmitCode(op);
         }
+        //public override string ExpOutType => exp_out_type;
         public override void СheckType()
         {
+            left.СheckType();
+            right.СheckType();
+
             if (left.ExpOutType == "bool" || right.ExpOutType == "bool")
                 ReportError();
             else if (left.ExpOutType == "float64" || right.ExpOutType == "float64")
@@ -83,6 +87,9 @@ namespace mini_compiler
         public override string ExpOutType => "bool";
         public override void СheckType()
         {
+            left.СheckType();
+            right.СheckType();
+
             if (left.ExpOutType == "bool" || right.ExpOutType == "bool")
                 ReportError();
             else if (left.ExpOutType == "float64" || right.ExpOutType == "float64")

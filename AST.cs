@@ -72,20 +72,19 @@ namespace mini_compiler
         {
             left_ident = to;
             right_node = node;
-           // Compiler.syntaxTree.Add(this);
         }
 
         public override string ExpOutType => right_node.ExpOutType;
 
         public override void GenCode()
         {
-            
             if (covert)
                 right_node.GenDoubleCode();
             else
                 right_node.GenCode();
 
             Compiler.PullStack(left_ident);
+            Compiler.PushStack(left_ident); // push on stack assigned value 
         }
 
         public override void СheckType()
