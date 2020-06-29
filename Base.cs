@@ -35,7 +35,7 @@ namespace mini_compiler
                     Compiler.EmitCode($"ldc.i4 {val}");
                     break;
                 case IdentType.Double:
-                    Compiler.EmitCode($"ldc.r4 {value}");
+                    Compiler.EmitCode($"ldc.r8 {value}");
                     break;
             }
         }
@@ -44,6 +44,16 @@ namespace mini_compiler
     public abstract class Node : AST
     {
         public abstract string ExpOutType { get; }
+        public void GenDoubleCode()
+        {
+            GenCode();
+            Compiler.EmitCode("conv.r8");
+        }
+        public void GenIntCode()
+        {
+            GenCode();
+            Compiler.EmitCode("conv.i4");
+        }
     }
 
     public class Program : AST
@@ -73,7 +83,7 @@ namespace mini_compiler
     {
         public override void GenCode()
         {
-            Compiler.EmitCode("ret");
+            Compiler.EmitCode("leave EndMain");
         }
 
         public override void СheckType()
@@ -103,6 +113,7 @@ namespace mini_compiler
     public class LeafVarNode : Node
     {
         public string name;
+        public string exp_out_type = null;
         public LeafVarNode(string name)
         {
             this.name = name;
@@ -110,7 +121,7 @@ namespace mini_compiler
 
         public override void GenCode() => Compiler.PushStack(name); // Compiler.EmitCode($"ldloc {name}");
 
-        public override string ExpOutType => Compiler.IdentTypeMap[Compiler.SymbolTable[name]];
+        public override string ExpOutType => exp_out_type;
 
         public override void СheckType()
         {
@@ -118,6 +129,10 @@ namespace mini_compiler
             {
                 Compiler.errors++;
                 Console.WriteLine("undeclared variable");
+            }
+            else
+            {
+                exp_out_type = Compiler.IdentTypeMap[Compiler.SymbolTable[name]];
             }
         }
     }

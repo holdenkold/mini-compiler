@@ -51,7 +51,9 @@ public class Compiler
         GenProlog();
         parser.Parse();
 
-        root.СheckType();
+        syntaxTree.RemoveAll(el => el == null);
+
+        syntaxTree.ForEach(n => n.СheckType());
         if (errors == 0)
         {
             root.GenCode();
@@ -108,15 +110,7 @@ public class Compiler
         EmitCode(".entrypoint");
         EmitCode(".try");
         EmitCode("{");
-        EmitCode();
-
-        EmitCode("// prolog");
-        EmitCode(".locals init ( float64 temp )");
-        for (char c = 'a'; c <= 'z'; ++c)
-        {
-            EmitCode($".locals init ( int32 _i{c} )");
-            EmitCode($".locals init ( float64 _r{c} )");
-        }
+        EmitCode(".maxstack 64");
         EmitCode();
     }
 
@@ -133,5 +127,4 @@ public class Compiler
         EmitCode("EndMain: ret");
         EmitCode("}");
     }
-
 }

@@ -20,20 +20,20 @@
 %token <val> Ident IntNumber RealNumber BoolValue String
 %token Int Double Bool
 
-%type <node> declaration statement write_expression read_expression expression_statement 
-%type <node_list> declaration_list statement_list
-%type <bnode> expression assign_statement primary_expression multiplicative_exp factor unary_exp relation_exp additive_exp bit_exp
+%type <node> declaration statement write_expression read_expression 
+%type <node_list> declaration_list statement_list block_statement_list
+%type <bnode> expression expression_statement primary_expression multiplicative_exp factor unary_exp relation_exp additive_exp bit_exp
 %type <con> values
 
 
 %%
 
 start 
-	:  Program "{" declaration_list statement_list"}" { Compiler.root = new Program($3, $4);}
+	:  Program "{" declaration_list statement_list"}" {Compiler.syntaxTree.AddRange($3); Compiler.syntaxTree.AddRange($4);}
 	;
 
 declaration_list
-	: declaration_list declaration {$1.Add($2); $$ = $1;}
+	: declaration_list declaration {$1.Add($2);  $$ = $1;}
 	| { $$ = new List<AST>();}
 	;
 
@@ -46,28 +46,25 @@ statement_list
 	| { $$ = new List<AST>();}
 	;
 
-
 expression_statement
-	: ";"
-	| expression ";" {$$ = $1;}
+	: Ident "=" expression_statement {$$ = new Assign($1, $3);}
+	| expression  {$$ = $1;}
 	;
-
-assign_statement
-	: Ident "=" expression { $$ = new Assign($1, $3);}
-	| Ident "=" assign_statement {$$ = new Assign($1, $3);}
-	;
-
 
 statement
-	: assign_statement ";" {$$ = $1; Console.WriteLine("assign:");Console.WriteLine($$);}
-	| write_expression ";" {Console.WriteLine("write:");Console.WriteLine($$);}
-	| read_expression ";" {Console.WriteLine("read:");Console.WriteLine($$);}
-	| expression_statement  {Console.WriteLine("expr:");Console.WriteLine($$);}
-	| "{" statement_list "}" {$$ = new Block($2==null? null : $2); }
+	: expression_statement ";" {$$ = new ExpStmt($1);}
+	| write_expression ";" {Console.WriteLine($$);}
+	| read_expression ";" {Console.WriteLine($$);}
+	| "{" block_statement_list "}" {$$ = new Block($2==null? null : $2);}
 	| Return ";" {$$ = new ReturnNode(); Console.WriteLine("return;");}
-	| If "(" expression ")" statement {$$ = new IfNode($3, $5);}
-	| If "(" expression ")" statement Else statement  {$$ = new IfNode($3, $5, $7);}
-	| While "(" expression ")" statement {$$ = new WhileNode($3, $5); Console.WriteLine("while:");Console.WriteLine($5);}
+	| If "(" expression_statement ")" statement {$$ = new IfNode($3, $5); }
+	| If "(" expression_statement ")" statement Else statement  {$$ = new IfNode($3, $5, $7); }
+	| While "(" expression_statement ")" statement {$$ = new WhileNode($3, $5);}
+	;
+
+block_statement_list
+	: block_statement_list statement {$1.Add($2); $$ = $1;}
+	| { $$ = new List<AST>();}
 	;
 
 expression
@@ -106,17 +103,17 @@ bit_exp
 	;
 
 unary_exp  
-	: "-" factor {$$ = new UnaryMinus($2, "neg");}
-	| "~" factor {$$ = new BitNegation($2, "not");}
-	| "!" factor {$$ = new LogicNegation($2, "ceq");}
-	| "(" Int ")" factor {$$ = new ConvertToInt($4);}
-	| "(" Double ")" factor {$$ = new ConvertToDouble($4);}
+	: "-" unary_exp {$$ = new UnaryMinus($2, "neg");}
+	| "~" unary_exp {$$ = new BitNegation($2, "not");}
+	| "!" unary_exp {$$ = new LogicNegation($2, "ceq");}
+	| "(" Int ")" unary_exp {$$ = new ConvertToInt($4);}
+	| "(" Double ")" unary_exp {$$ = new ConvertToDouble($4);}
 	| factor
 	;
 
 factor
 	: primary_expression
-	| "(" expression ")" {$$ = $2;}
+	| "(" expression_statement ")" {$$ = $2;}
 	;
 
 primary_expression
@@ -132,7 +129,7 @@ values
 	
 
 write_expression 
-	: Write expression {$$ = new Write($2);}
+	: Write expression_statement {$$ = new Write($2);}
 	| Write String {$$ = new WriteString($2);}
 	; 
 

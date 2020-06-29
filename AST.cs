@@ -61,6 +61,23 @@ namespace mini_compiler
         }
     }
 
+    public class ExpStmt : AST
+    {
+        AST stmt;
+        public ExpStmt(AST stmt)
+        {
+            this.stmt = stmt;
+        }
+
+        public override void GenCode()
+        {
+            stmt.GenCode();
+            Compiler.EmitCode("pop");
+        }
+
+        public override void СheckType() => stmt.СheckType();
+    }
+
     public class Assign : Node
     {
         string left_ident;
@@ -70,17 +87,20 @@ namespace mini_compiler
         {
             left_ident = to;
             right_node = node;
-           // Compiler.syntaxTree.Add(this);
         }
 
-        public override string ExpOutType => right_node.ExpOutType;
+        public override string ExpOutType => Compiler.IdentTypeMap[Compiler.SymbolTable[left_ident]];
 
         public override void GenCode()
         {
-            right_node.GenCode();
             if (covert)
-                Compiler.EmitCode("conv.r8");
+                right_node.GenDoubleCode();
+            else
+                right_node.GenCode();
+
+            Compiler.EmitCode("dup");
             Compiler.PullStack(left_ident);
+            //Compiler.PushStack(left_ident); // push on stack assigned value 
         }
 
         public override void СheckType()
@@ -205,6 +225,11 @@ namespace mini_compiler
         public override void GenCode()
         {
             var type = char.ToUpper(node.ExpOutType[0]) + node.ExpOutType.Substring(1); //converting type, for ex: int32 -> Int32
+            if (node.ExpOutType == "bool")
+                type = "Boolean";
+            else if (node.ExpOutType == "float64")
+                type = "Double";
+
             Compiler.EmitCode($"call string [mscorlib]System.Console::ReadLine()");
             Compiler.EmitCode($"call {node.ExpOutType} [mscorlib]System.{type}::Parse(string)");
             //Compiler.EmitCode($"stloc {node.name}");
@@ -249,6 +274,10 @@ namespace mini_compiler
 
         public override void СheckType()
         {
+            condition.СheckType();
+            body.СheckType();
+            elsebody?.СheckType();
+
             if (condition.ExpOutType != "bool")
             {
                 Compiler.errors += 1;
@@ -283,6 +312,10 @@ namespace mini_compiler
 
         public override void СheckType()
         {
+            condition.СheckType();
+            body.СheckType();
+
+
             if (condition.ExpOutType != "bool")
             {
                 Compiler.errors += 1;

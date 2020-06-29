@@ -13,6 +13,9 @@ namespace mini_compiler
         public override string ExpOutType => "int32";
         public override void СheckType()
         {
+            left.СheckType();
+            right.СheckType();
+
             if (left.ExpOutType != "int32" || right.ExpOutType != "int32")
                 ReportError();
         }
@@ -25,18 +28,25 @@ namespace mini_compiler
         public ArithmeticExpNode(Node left, string op, Node right) : base(left, op, right) { }
         public override void GenCode()
         {
-            left.GenCode();
             if (left_convert)
-                Compiler.EmitCode("conv.r8");
-            right.GenCode();
+                left.GenDoubleCode();
+            else
+                left.GenCode();
 
             if(right_convert)
-                Compiler.EmitCode("conv.r8");
+                right.GenDoubleCode();
+            else
+                right.GenCode();
 
             Compiler.EmitCode(op);
         }
+        //public override string ExpOutType => exp_out_type;
         public override void СheckType()
         {
+
+            left.СheckType();
+            right.СheckType();
+
             if (left.ExpOutType == "bool" || right.ExpOutType == "bool")
                 ReportError();
             else if (left.ExpOutType == "float64" || right.ExpOutType == "float64")
@@ -60,13 +70,16 @@ namespace mini_compiler
         public RelationalExpNode(Node left, string op, Node right, bool eq = false) : base(left, op, right) { this.eq = eq; }
         public override void GenCode()
         {
-            left.GenCode();
             if (left_convert)
-                Compiler.EmitCode("conv.r8");
-            right.GenCode();
+                left.GenDoubleCode();
+            else
+                left.GenCode();
 
             if (right_convert)
-                Compiler.EmitCode("conv.r8");
+                right.GenDoubleCode();
+            else
+                right.GenCode();
+
             Compiler.EmitCode(op);
             if (eq)
             {
@@ -78,7 +91,14 @@ namespace mini_compiler
         public override string ExpOutType => "bool";
         public override void СheckType()
         {
-            if (left.ExpOutType == "bool" || right.ExpOutType == "bool")
+
+            left.СheckType();
+            right.СheckType();
+
+            if((left.ExpOutType == "bool" && right.ExpOutType != "bool") || (left.ExpOutType != "bool" && right.ExpOutType == "bool"))
+                ReportError();
+
+            if ((left.ExpOutType == "bool" || right.ExpOutType == "bool") && (op != "ceq"))
                 ReportError();
             else if (left.ExpOutType == "float64" || right.ExpOutType == "float64")
             {
@@ -99,6 +119,9 @@ namespace mini_compiler
         public override string ExpOutType => "bool";
         public override void СheckType()
         {
+            left.СheckType();
+            right.СheckType();
+
             if (left.ExpOutType != "bool" || right.ExpOutType != "bool")
                 ReportError();
         }
@@ -106,14 +129,12 @@ namespace mini_compiler
         {
             var label = $"L{Compiler.label_num++}";
             left.GenCode();
-            //Compiler.EmitCode("ldc.i4.1");
-            //Compiler.EmitCode("ceq");
-            //if (op == "and")
-            //    Compiler.EmitCode($"brfalse {label}");
-            //else if (op == "or")
-            //    Compiler.EmitCode($"brtrue {label}");
+            Compiler.EmitCode("dup");
+            if (op == "and")
+                Compiler.EmitCode($"brfalse {label}");
+            else if (op == "or")
+                Compiler.EmitCode($"brtrue {label}");
 
-            //left.GenCode();
             right.GenCode();
             Compiler.EmitCode(op);
             Compiler.EmitCode($"{label}:");
@@ -136,6 +157,7 @@ namespace mini_compiler
                 ReportError();
             exp_out_type = exp.ExpOutType;
         }
+        public override string ExpOutType => exp.ExpOutType;
     }
 
     public class BitNegation : UnaryNode
