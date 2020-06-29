@@ -56,6 +56,29 @@ namespace mini_compiler
         }
     }
 
+    public class Program : AST
+    {
+        List<AST> declarations;
+        List<AST> statements;
+        public Program(List<AST> decl, List<AST> stmt)
+        {
+            declarations = decl;
+            statements = stmt;
+        }
+
+        public override void GenCode()
+        {
+            declarations.ForEach(d => d.GenCode());
+            statements.ForEach(s => s.GenCode());
+        }
+
+        public override void СheckType()
+        {
+            declarations.ForEach(d => d.СheckType());
+            statements.ForEach(s => s.СheckType());
+        }
+    }
+
     public class ReturnNode : AST
     {
         public override void GenCode()
@@ -68,6 +91,7 @@ namespace mini_compiler
             return;
         }
     }
+
     public class LeafValNode : Node
     {
         Constant value;

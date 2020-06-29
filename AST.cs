@@ -25,8 +25,6 @@ namespace mini_compiler
         {
             this.type = type;
             varName = name;
-
-            //Compiler.syntaxTree.Add(this);
         }
 
         public override void GenCode()
