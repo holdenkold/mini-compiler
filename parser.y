@@ -53,7 +53,7 @@ expression_statement
 	;
 
 statement
-	: expression_statement ";" {$$ = $1;}
+	: expression_statement ";" {$$ = new ExpStmt($1);}
 	| write_expression ";" {Console.WriteLine($$);}
 	| read_expression ";" {Console.WriteLine($$);}
 	| "{" block_statement_list "}" {$$ = new Block($2==null? null : $2);}

@@ -63,6 +63,23 @@ namespace mini_compiler
         }
     }
 
+    public class ExpStmt : AST
+    {
+        AST stmt;
+        public ExpStmt(AST stmt)
+        {
+            this.stmt = stmt;
+        }
+
+        public override void GenCode()
+        {
+            stmt.GenCode();
+            Compiler.EmitCode("pop");
+        }
+
+        public override void СheckType() => stmt.СheckType();
+    }
+
     public class Assign : Node
     {
         string left_ident;
