@@ -91,7 +91,7 @@ namespace mini_compiler
             right_node = node;
         }
 
-        public override string ExpOutType => right_node.ExpOutType;
+        public override string ExpOutType => Compiler.IdentTypeMap[Compiler.SymbolTable[left_ident]];
 
         public override void GenCode()
         {
@@ -271,6 +271,10 @@ namespace mini_compiler
 
         public override void СheckType()
         {
+            condition.СheckType();
+            body.СheckType();
+            elsebody?.СheckType();
+
             if (condition.ExpOutType != "bool")
             {
                 Compiler.errors += 1;
