@@ -13,6 +13,9 @@ namespace mini_compiler
         public override string ExpOutType => "int32";
         public override void СheckType()
         {
+            left.СheckType();
+            right.СheckType();
+
             if (left.ExpOutType != "int32" || right.ExpOutType != "int32")
                 ReportError();
         }
@@ -40,6 +43,7 @@ namespace mini_compiler
         //public override string ExpOutType => exp_out_type;
         public override void СheckType()
         {
+
             left.СheckType();
             right.СheckType();
 
@@ -87,6 +91,7 @@ namespace mini_compiler
         public override string ExpOutType => "bool";
         public override void СheckType()
         {
+
             left.СheckType();
             right.СheckType();
 
@@ -114,6 +119,9 @@ namespace mini_compiler
         public override string ExpOutType => "bool";
         public override void СheckType()
         {
+            left.СheckType();
+            right.СheckType();
+
             if (left.ExpOutType != "bool" || right.ExpOutType != "bool")
                 ReportError();
         }
