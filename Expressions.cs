@@ -1,8 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.Remoting.Messaging;
-using System.Text;
+using mini_compiler;
 
 namespace mini_compiler
 {
@@ -136,9 +133,8 @@ namespace mini_compiler
 
             if (!Compiler.SymbolTable.ContainsKey(left_ident))
             {
-                Compiler.errors += 1;
-                Console.WriteLine("undeclared variable");
-                return;
+                Compiler.ReportError("undeclared variable"); 
+                return; //?
             }
 
             IdentType assigntTo = Compiler.SymbolTable[left_ident];
@@ -146,22 +142,15 @@ namespace mini_compiler
             if (assigntTo == IdentType.Double)
             {
                 if (assigntFrom == IdentType.Bool)
-                {
-                    Compiler.errors += 1;
-                    Console.WriteLine("Semantic Error: Expected int or double for assigment, got bool");
-                }
+                    Compiler.ReportError("Semantic Error: Expected int or double for assigment, got bool");
                 else
                     right_node = new Convert(right_node, IdentType.Double);
             }
             else if (assigntTo == IdentType.Int && assigntFrom != IdentType.Int)
-            {
-                Compiler.errors += 1;
-                Console.WriteLine($"Semantic Error: Expected int for assigment, got {assigntFrom}");
-            }
+                Compiler.ReportError($"Semantic Error: Expected int for assigment, got {assigntFrom}");
             else if (assigntTo == IdentType.Bool && assigntFrom != IdentType.Bool)
-            {
-                Compiler.errors += 1;
-                Console.WriteLine($"Semantic Error: Expected bool for assigment, got {assigntFrom}");
+                Compiler.ReportError($"Semantic Error: Expected bool for assigment, got {assigntFrom}");
+           
             }
         }
     }
@@ -244,4 +233,4 @@ namespace mini_compiler
     }
 
     #endregion
-}
+

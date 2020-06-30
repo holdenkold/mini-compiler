@@ -1,7 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 namespace mini_compiler
 {
@@ -76,10 +73,7 @@ namespace mini_compiler
         public override void СheckType()
         {
             if (!Compiler.SymbolTable.ContainsKey(name))
-            {
-                Compiler.errors++;
-                Console.WriteLine("undeclared variable");
-            }
+                Compiler.ReportError("undeclared variable");
             else
                 exp_out_type = Compiler.SymbolTable[name];
         }
@@ -89,7 +83,7 @@ namespace mini_compiler
     {
         protected Node exp;
         protected string op;
-        protected IdentType  exp_out_type;
+        protected IdentType exp_out_type;
         protected string error_msg { get => $"Semantic Error: Invalid type {op} {exp.ExpOutType}"; }
 
         public UnaryNode(Node exp, string op)
@@ -98,11 +92,7 @@ namespace mini_compiler
             this.op = op;
         }
 
-        public void ReportError()
-        {
-            Compiler.errors++;
-            Console.WriteLine(error_msg);
-        }
+        public void ReportError() => Compiler.ReportError(error_msg);
 
         public override void GenCode()
         {
@@ -120,7 +110,7 @@ namespace mini_compiler
         protected Node right;
         protected Node left;
         protected string op;
-        protected IdentType  exp_out_type;
+        protected IdentType exp_out_type;
         protected string error_msg { get => $"Semantic Error: Invalid type {left.ExpOutType} {op} {right.ExpOutType}"; }
 
         public override IdentType ExpOutType => exp_out_type;
@@ -132,8 +122,7 @@ namespace mini_compiler
         }
         public void ReportError()
         {
-            Compiler.errors++;
-            Console.WriteLine(error_msg);
+           Compiler.ReportError(error_msg);
         }
 
         public override void GenCode()

@@ -1,13 +1,5 @@
-﻿using QUT.Gppg;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.IO;
-using System.Linq;
-using System.Runtime.Remoting.Messaging;
-using System.Security.Permissions;
-using System.Xml.Schema;
 
 namespace mini_compiler
 {
@@ -98,7 +90,7 @@ namespace mini_compiler
                     Compiler.EmitCode("call string [mscorlib]System.String::Format(class [mscorlib]System.IFormatProvider, string, object)");
                     Compiler.EmitCode("call void [mscorlib]System.Console::Write(string)");
                     break;
-                    
+
                 case IdentType.Int:
                     value.GenCode();
                     Compiler.EmitCode($"call void [mscorlib]System.Console::Write(int32)");
@@ -215,8 +207,8 @@ namespace mini_compiler
 
         public override void GenCode()
         {
-            var while_start = Compiler.GetLabel; 
-            var while_end = Compiler.GetLabel; 
+            var while_start = Compiler.GetLabel;
+            var while_end = Compiler.GetLabel;
 
             Compiler.EmitCode($"{while_start}:");
             condition.GenCode();                            // pushing to stack condition result
