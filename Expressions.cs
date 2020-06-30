@@ -22,24 +22,7 @@ namespace mini_compiler
 
     public class ArithmeticExpNode : BinaryNode
     {
-        bool right_convert = false;
-        bool left_convert = false;
         public ArithmeticExpNode(Node left, string op, Node right) : base(left, op, right) { }
-        public override void GenCode()
-        {
-            if (left_convert)
-                left.GenDoubleCode();
-            else
-                left.GenCode();
-
-            if (right_convert)
-                right.GenDoubleCode();
-            else
-                right.GenCode();
-
-            Compiler.EmitCode(op);
-        }
-
         public override void СheckType()
         {
             base.СheckType();
@@ -51,9 +34,9 @@ namespace mini_compiler
             {
                 exp_out_type = IdentType.Double;
                 if (left.ExpOutType == IdentType.Int)
-                    left_convert = true;
+                    left = new Convert(left, IdentType.Double);
                 if (right.ExpOutType == IdentType.Int)
-                    right_convert = true;
+                    right = new Convert(right, IdentType.Double);
             }
             else
                 exp_out_type = IdentType.Int;
@@ -63,22 +46,10 @@ namespace mini_compiler
     public class RelationalExpNode : BinaryNode
     {
         bool eq;
-        bool right_convert = false;
-        bool left_convert = false;
         public RelationalExpNode(Node left, string op, Node right, bool eq = false) : base(left, op, right) { this.eq = eq; }
         public override void GenCode()
         {
-            if (left_convert)
-                left.GenDoubleCode();
-            else
-                left.GenCode();
-
-            if (right_convert)
-                right.GenDoubleCode();
-            else
-                right.GenCode();
-
-            Compiler.EmitCode(op);
+            base.GenCode();
             if (eq)
             {
                 Compiler.EmitCode("ldc.i4.0");
@@ -101,9 +72,9 @@ namespace mini_compiler
             {
                 exp_out_type = IdentType.Double;
                 if (left.ExpOutType == IdentType.Int)
-                    left_convert = true;
+                    left = new Convert(left, IdentType.Double);
                 if (right.ExpOutType == IdentType.Int)
-                    right_convert = true;
+                    right = new Convert(right, IdentType.Double);
             }
             else
                 exp_out_type = IdentType.Int;
@@ -123,7 +94,7 @@ namespace mini_compiler
         }
         public override void GenCode()
         {
-            var label = Compiler.GetLabel; //$"L{Compiler.label_num++}";
+            var label = Compiler.GetLabel;
 
             left.GenCode();
             Compiler.EmitCode("dup");
@@ -143,7 +114,6 @@ namespace mini_compiler
     {
         string left_ident;
         Node right_node;
-        bool covert = false;
         public Assign(string to, Node node)
         {
             left_ident = to;
@@ -154,10 +124,7 @@ namespace mini_compiler
 
         public override void GenCode()
         {
-            if (covert)
-                right_node.GenDoubleCode();
-            else
-                right_node.GenCode();
+            right_node.GenCode();
 
             Compiler.EmitCode("dup");
             Compiler.PullStack(left_ident);
@@ -184,7 +151,7 @@ namespace mini_compiler
                     Console.WriteLine("Semantic Error: Expected int or double for assigment, got bool");
                 }
                 else
-                    covert = true;
+                    right_node = new Convert(right_node, IdentType.Double);
             }
             else if (assigntTo == IdentType.Int && assigntFrom != IdentType.Int)
             {
