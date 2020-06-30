@@ -88,19 +88,26 @@ namespace mini_compiler
 
         public override void GenCode()
         {
-            if (value.ExpOutType == "float64")
+            switch (value.ExpOutType)
             {
-                Compiler.EmitCode("call class [mscorlib]System.Globalization.CultureInfo [mscorlib]System.Globalization.CultureInfo::get_InvariantCulture()");
-                Compiler.EmitCode("ldstr \"{0:0.000000}\"");
-                value.GenCode();
-                Compiler.EmitCode("box [mscorlib]System.Double");
-                Compiler.EmitCode("call string [mscorlib]System.String::Format(class [mscorlib]System.IFormatProvider, string, object)");
-                Compiler.EmitCode("call void [mscorlib]System.Console::Write(string)");
-            }
-            else
-            {
-                value.GenCode();
-                Compiler.EmitCode($"call void [mscorlib]System.Console::Write({value.ExpOutType})");
+                case IdentType.Double:
+                    Compiler.EmitCode("call class [mscorlib]System.Globalization.CultureInfo [mscorlib]System.Globalization.CultureInfo::get_InvariantCulture()");
+                    Compiler.EmitCode("ldstr \"{0:0.000000}\"");
+                    value.GenCode();
+                    Compiler.EmitCode("box [mscorlib]System.Double");
+                    Compiler.EmitCode("call string [mscorlib]System.String::Format(class [mscorlib]System.IFormatProvider, string, object)");
+                    Compiler.EmitCode("call void [mscorlib]System.Console::Write(string)");
+                    break;
+                    
+                case IdentType.Int:
+                    value.GenCode();
+                    Compiler.EmitCode($"call void [mscorlib]System.Console::Write(int32)");
+                    break;
+
+                case IdentType.Bool:
+                    value.GenCode();
+                    Compiler.EmitCode($"call void [mscorlib]System.Console::Write(bool)");
+                    break;
             }
         }
 
@@ -131,22 +138,25 @@ namespace mini_compiler
 
         public override void GenCode()
         {
-            string type = null;
-            if (node.ExpOutType == "int32")
-                type = "Int32";
-            else if (node.ExpOutType == "bool")
-                type = "Boolean";
-            else if (node.ExpOutType == "float64")
-                type = "Double";
-            else
+            Compiler.EmitCode($"call string [mscorlib]System.Console::ReadLine()");
+
+            switch (node.ExpOutType)
             {
-                Console.WriteLine($"unrecognized type {node.ExpOutType}");
-                //TO DO: should errors++?
-                return;
+                case IdentType.Int:
+                    Compiler.EmitCode($"call int32 [mscorlib]System.Int32::Parse(string)");
+                    break;
+                case IdentType.Bool:
+                    Compiler.EmitCode($"call bool [mscorlib]System.Boolean::Parse(string)");
+                    break;
+                case IdentType.Double:
+                    Compiler.EmitCode($"call float64 [mscorlib]System.Double::Parse(string)");
+                    break;
+                default:
+                    Console.WriteLine($"unrecognized type {node.ExpOutType}");
+                    //TO DO: should errors++?
+                    return;
             }
 
-            Compiler.EmitCode($"call string [mscorlib]System.Console::ReadLine()");
-            Compiler.EmitCode($"call {node.ExpOutType} [mscorlib]System.{type}::Parse(string)");
             Compiler.PullStack(node.name);
         }
 
@@ -185,7 +195,7 @@ namespace mini_compiler
             body.СheckType();
             elsebody?.СheckType();
 
-            if (condition.ExpOutType != "bool")
+            if (condition.ExpOutType != IdentType.Bool)
             {
                 Compiler.errors += 1;
                 Console.WriteLine($"Semantic Error: Expected bool expression, got {condition.ExpOutType}");
@@ -221,7 +231,7 @@ namespace mini_compiler
             condition.СheckType();
             body.СheckType();
 
-            if (condition.ExpOutType != "bool")
+            if (condition.ExpOutType != IdentType.Bool)
             {
                 Compiler.errors += 1;
                 Console.WriteLine($"Semantic Error: Expected bool expression, got {condition.ExpOutType}");

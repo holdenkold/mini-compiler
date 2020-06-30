@@ -43,7 +43,7 @@ namespace mini_compiler
 
     public abstract class Node : AST
     {
-        public abstract string ExpOutType { get; }
+        public abstract IdentType ExpOutType { get; }
 
         public void GenDoubleCode()
         {
@@ -66,7 +66,7 @@ namespace mini_compiler
 
         public override void GenCode() => value.PushStack();
 
-        public override string ExpOutType => Compiler.IdentTypeMap[value.type];
+        public override IdentType ExpOutType => value.type;
 
         public override void СheckType()
         {
@@ -77,13 +77,13 @@ namespace mini_compiler
     public class LeafVarNode : Node
     {
         public string name;
-        public string exp_out_type = null;
+        public IdentType exp_out_type;
 
         public LeafVarNode(string name) => this.name = name;
 
         public override void GenCode() => Compiler.PushStack(name);
 
-        public override string ExpOutType => exp_out_type;
+        public override IdentType ExpOutType => exp_out_type;
 
         public override void СheckType()
         {
@@ -94,7 +94,7 @@ namespace mini_compiler
             }
             else
             {
-                exp_out_type = Compiler.IdentTypeMap[Compiler.SymbolTable[name]];
+                exp_out_type = Compiler.SymbolTable[name];
             }
         }
     }
@@ -103,7 +103,7 @@ namespace mini_compiler
     {
         protected Node exp;
         protected string op;
-        protected string exp_out_type;
+        protected IdentType  exp_out_type;
         protected string error_msg { get => $"Semantic Error: Invalid type {op} {exp.ExpOutType}"; }
 
         public UnaryNode(Node exp, string op)
@@ -126,7 +126,7 @@ namespace mini_compiler
 
         public override void СheckType() => exp.СheckType();
 
-        public override string ExpOutType => exp_out_type;
+        public override IdentType ExpOutType => exp_out_type;
     }
 
     public abstract class BinaryNode : Node
@@ -134,10 +134,10 @@ namespace mini_compiler
         protected Node right;
         protected Node left;
         protected string op;
-        protected string exp_out_type;
+        protected IdentType  exp_out_type;
         protected string error_msg { get => $"Semantic Error: Invalid type {left.ExpOutType} {op} {right.ExpOutType}"; }
 
-        public override string ExpOutType => exp_out_type;
+        public override IdentType ExpOutType => exp_out_type;
         public BinaryNode(Node left, string op, Node right)
         {
             this.left = left;
