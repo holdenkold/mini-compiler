@@ -127,7 +127,7 @@ namespace mini_compiler
         }
         public override void GenCode()
         {
-            var label = $"L{Compiler.label_num++}";
+            var label = Compiler.GetLabel; //$"L{Compiler.label_num++}";
 
             left.GenCode();
             Compiler.EmitCode("dup");

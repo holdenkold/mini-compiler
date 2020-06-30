@@ -15,7 +15,8 @@ public class Compiler
         { IdentType.Int, "int32" }, { IdentType.Double, "float64" }, { IdentType.Bool, "bool" }
     };
 
-    public static int label_num = 0;
+    static int label_num = 0;
+    public static string GetLabel => $"L{label_num++}";
 
     public static int Main(string[] args)
     {
@@ -71,7 +72,6 @@ public class Compiler
         }
         return errors == 0 ? 0 : 2;
     }
-
 
     public static void PullStack(string var_name)
     {

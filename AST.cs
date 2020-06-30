@@ -167,8 +167,8 @@ namespace mini_compiler
 
         public override void GenCode()
         {
-            var else_label = $"L{Compiler.label_num++}";
-            var end_if_label = $"L{Compiler.label_num++}";
+            var else_label = Compiler.GetLabel; //$"L{Compiler.label_num++}";
+            var end_if_label = Compiler.GetLabel;  //$"L{Compiler.label_num++}";
 
             condition.GenCode();                            // pushing to stack condition result
             Compiler.EmitCode($"brfalse {else_label}");     // IF
@@ -205,15 +205,15 @@ namespace mini_compiler
 
         public override void GenCode()
         {
-            int while_start = Compiler.label_num++;
-            int while_end = Compiler.label_num++;
+            var while_start = Compiler.GetLabel; //Compiler.label_num++;
+            var while_end = Compiler.GetLabel;  //Compiler.label_num++;
 
-            Compiler.EmitCode($"L{while_start}:");
+            Compiler.EmitCode($"{while_start}:");
             condition.GenCode();                            // pushing to stack condition result
-            Compiler.EmitCode($"brfalse L{while_end}");     // WHILE
+            Compiler.EmitCode($"brfalse {while_end}");     // WHILE
             body.GenCode();                                 // BODY
-            Compiler.EmitCode($"br L{while_start}");        // checking the condition one more time
-            Compiler.EmitCode($"L{while_end}:");
+            Compiler.EmitCode($"br {while_start}");        // checking the condition one more time
+            Compiler.EmitCode($"{while_end}:");
         }
 
         public override void СheckType()
