@@ -131,7 +131,7 @@ namespace mini_compiler
             EmitCode("}");
         }
 
-
+    }
         #region Base Nodes
         public enum IdentType
         {
@@ -745,6 +745,6 @@ namespace mini_compiler
 
 
         #endregion
-    }
+    
 }
 
