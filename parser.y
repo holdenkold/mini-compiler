@@ -29,8 +29,6 @@
 
 start 
 	: Program "{" declaration_list statement_list"}" {Compiler.syntaxTree.AddRange($3); Compiler.syntaxTree.AddRange($4);}
-	| error  {Console.Write("line : "); Console.WriteLine(@1.StartLine);} ";"  start
-	| start error  {Console.Write("line : "); Console.WriteLine(@1.StartLine);} ";" 
 	;
 
 declaration_list
