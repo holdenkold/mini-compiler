@@ -6,7 +6,7 @@ namespace mini_compiler
     #region Binary Operators
     public class BitExpNode : BinaryNode
     {
-        public BitExpNode(Node left, string op, Node right) : base(left, op, right) { }
+        public BitExpNode(Node left, string op, Node right, int linenum) : base(left, op, right, linenum) { }
         public override IdentType ExpOutType => IdentType.Int;
         public override void СheckType()
         {
@@ -19,7 +19,7 @@ namespace mini_compiler
 
     public class ArithmeticExpNode : BinaryNode
     {
-        public ArithmeticExpNode(Node left, string op, Node right) : base(left, op, right) { }
+        public ArithmeticExpNode(Node left, string op, Node right, int linenum) : base(left, op, right, linenum) { }
         public override void СheckType()
         {
             base.СheckType();
@@ -31,9 +31,9 @@ namespace mini_compiler
             {
                 exp_out_type = IdentType.Double;
                 if (left.ExpOutType == IdentType.Int)
-                    left = new Convert(left, IdentType.Double);
+                    left = new Convert(left, IdentType.Double, linenum);
                 if (right.ExpOutType == IdentType.Int)
-                    right = new Convert(right, IdentType.Double);
+                    right = new Convert(right, IdentType.Double, linenum);
             }
             else
                 exp_out_type = IdentType.Int;
@@ -43,7 +43,7 @@ namespace mini_compiler
     public class RelationalExpNode : BinaryNode
     {
         bool eq;
-        public RelationalExpNode(Node left, string op, Node right, bool eq = false) : base(left, op, right) { this.eq = eq; }
+        public RelationalExpNode(Node left, string op, Node right, bool eq = false, int linenum = -1) : base(left, op, right, linenum) { this.eq = eq; }
         public override void GenCode()
         {
             base.GenCode();
@@ -69,9 +69,9 @@ namespace mini_compiler
             {
                 exp_out_type = IdentType.Double;
                 if (left.ExpOutType == IdentType.Int)
-                    left = new Convert(left, IdentType.Double);
+                    left = new Convert(left, IdentType.Double, linenum);
                 if (right.ExpOutType == IdentType.Int)
-                    right = new Convert(right, IdentType.Double);
+                    right = new Convert(right, IdentType.Double, linenum);
             }
             else
                 exp_out_type = IdentType.Int;
@@ -80,7 +80,7 @@ namespace mini_compiler
 
     public class LogicalExpNode : BinaryNode
     {
-        public LogicalExpNode(Node left, string op, Node right) : base(left, op, right) { }
+        public LogicalExpNode(Node left, string op, Node right, int linenum) : base(left, op, right, linenum) { }
         public override IdentType ExpOutType => IdentType.Bool;
         public override void СheckType()
         {
@@ -111,7 +111,7 @@ namespace mini_compiler
     {
         string left_ident;
         Node right_node;
-        public Assign(string to, Node node)
+        public Assign(string to, Node node, int linenum) : base(linenum)
         {
             left_ident = to;
             right_node = node;
@@ -124,7 +124,7 @@ namespace mini_compiler
             right_node.GenCode();
 
             Compiler.EmitCode("dup");
-            Compiler.PullStack(left_ident);
+            Compiler.PullStack(linenum, left_ident);
         }
 
         public override void СheckType()
@@ -133,7 +133,7 @@ namespace mini_compiler
 
             if (!Compiler.SymbolTable.ContainsKey(left_ident))
             {
-                Compiler.ReportError("undeclared variable"); 
+                Compiler.ReportError(linenum, "undeclared variable"); 
                 return; //?
             }
 
@@ -142,14 +142,14 @@ namespace mini_compiler
             if (assigntTo == IdentType.Double)
             {
                 if (assigntFrom == IdentType.Bool)
-                    Compiler.ReportError("Semantic Error: Expected int or double for assigment, got bool");
+                    Compiler.ReportError(linenum, "Semantic Error: Expected int or double for assigment, got bool");
                 else
-                    right_node = new Convert(right_node, IdentType.Double);
+                    right_node = new Convert(right_node, IdentType.Double, linenum);
             }
             else if (assigntTo == IdentType.Int && assigntFrom != IdentType.Int)
-                Compiler.ReportError($"Semantic Error: Expected int for assigment, got {assigntFrom}");
+                Compiler.ReportError(linenum, $"Semantic Error: Expected int for assigment, got {assigntFrom}");
             else if (assigntTo == IdentType.Bool && assigntFrom != IdentType.Bool)
-                Compiler.ReportError($"Semantic Error: Expected bool for assigment, got {assigntFrom}");
+                Compiler.ReportError(linenum, $"Semantic Error: Expected bool for assigment, got {assigntFrom}");
            
             }
         }
@@ -158,7 +158,7 @@ namespace mini_compiler
     {
         Node exp;
         IdentType typeTo;
-        public Convert(Node exp, IdentType type_to)
+        public Convert(Node exp, IdentType type_to, int linenum) : base(linenum)
         {
             this.exp = exp;
             typeTo = type_to;
@@ -184,7 +184,7 @@ namespace mini_compiler
     #region Unary Operators
     public class UnaryMinus : UnaryNode
     {
-        public UnaryMinus(Node exp, string op) : base(exp, op) { }
+        public UnaryMinus(Node exp, string op, int linenum) : base(exp, op, linenum) { }
 
         public override void СheckType()
         {
@@ -199,7 +199,7 @@ namespace mini_compiler
 
     public class BitNegation : UnaryNode
     {
-        public BitNegation(Node exp, string op) : base(exp, op) { }
+        public BitNegation(Node exp, string op, int linenum) : base(exp, op, linenum) { }
 
         public override void СheckType()
         {
@@ -213,7 +213,7 @@ namespace mini_compiler
 
     public class LogicNegation : UnaryNode
     {
-        public LogicNegation(Node exp, string op) : base(exp, op) { }
+        public LogicNegation(Node exp, string op, int linenum) : base(exp, op, linenum) { }
 
         public override void СheckType()
         {

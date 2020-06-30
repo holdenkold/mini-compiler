@@ -16,10 +16,10 @@ namespace mini_compiler
         static int label_num = 0;
         public static string GetLabel => $"L{label_num++}";
 
-        public static void ReportError(string msg)
+        public static void ReportError(int linenum, string msg)
         {
             errors++;
-            Console.WriteLine(msg);
+            Console.WriteLine($"line {linenum} : {msg}");
         }
 
         public static int Main(string[] args)
@@ -53,14 +53,20 @@ namespace mini_compiler
             Console.WriteLine();
             sw = new StreamWriter(file + ".il");
             GenProlog();
-            parser.Parse();
 
-            syntaxTree.RemoveAll(el => el == null);
-
-            syntaxTree.ForEach(n => n.СheckType());
-            if (errors == 0)
+            try
             {
-                syntaxTree.ForEach(n => n.GenCode());
+                parser.Parse();
+                syntaxTree.RemoveAll(el => el == null);
+                syntaxTree.ForEach(n => n.СheckType());
+                if (errors == 0)
+                {
+                    syntaxTree.ForEach(n => n.GenCode());
+                }
+            }
+            catch(Exception exc)
+            {
+                Console.WriteLine($"Parsing Failed\n {exc.Message}");
             }
             GenEpilog();
             sw.Close();
@@ -76,18 +82,18 @@ namespace mini_compiler
             return errors == 0 ? 0 : 2;
         }
 
-        public static void PullStack(string var_name)
+        public static void PullStack(int linenum, string var_name)
         {
             if (!SymbolTable.ContainsKey(var_name))
-                ReportError("undeclared variable");
+                ReportError(linenum, "undeclared variable");
      
             EmitCode($"stloc v_{var_name}");
         }
 
-        public static void PushStack(string var_name)
+        public static void PushStack(int linenum, string var_name)
         {
             if (!SymbolTable.ContainsKey(var_name))
-                ReportError("undeclared variable");
+                ReportError(linenum, "undeclared variable");
            
             EmitCode($"ldloc v_{var_name}");
         }

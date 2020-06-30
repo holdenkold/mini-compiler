@@ -65,3 +65,8 @@ String		\"([^"\\\n]|\\.)*\"
 "{"             { return (int)Tokens.OpenBr; }
 "}"             { return (int)Tokens.CloseBr; }
 ";"             { return (int)Tokens.Semicolon; }
+
+
+%{
+  yylloc = new LexLocation(tokLin, tokCol, tokELin, tokECol);
+%}

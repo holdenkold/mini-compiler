@@ -5,6 +5,7 @@ namespace mini_compiler
 {
     public abstract class AST
     {
+        protected int linenum = -1;
         public abstract void GenCode();
         public abstract void СheckType();
     }
@@ -13,8 +14,9 @@ namespace mini_compiler
     {
         IdentType type;
         string varName;
-        public Declare(string name, IdentType type)
+        public Declare(string name, IdentType type, int linenum)
         {
+            base.linenum = linenum;
             this.type = type;
             varName = name;
         }
@@ -27,12 +29,12 @@ namespace mini_compiler
                 case IdentType.Bool:
                     Compiler.EmitCode($".locals init ( int32 v_{varName} )"); //declare
                     Compiler.EmitCode("ldc.i4.0"); //pushing 0 on stack
-                    Compiler.PullStack(varName); //initialisation variable with 0 (linking varName with last value on stack)
+                    Compiler.PullStack(linenum, varName); //initialisation variable with 0 (linking varName with last value on stack)
                     break;
                 case IdentType.Double:
                     Compiler.EmitCode($".locals init ( float64 v_{varName} )"); //declare
                     Compiler.EmitCode("ldc.r8 0.0"); //pushing 0 on stack
-                    Compiler.PullStack(varName); //initialisation variable with 0 (linking varName with last value on stack)
+                    Compiler.PullStack(linenum, varName); //initialisation variable with 0 (linking varName with last value on stack)
                     break;
             }
         }
@@ -41,8 +43,7 @@ namespace mini_compiler
         {
             if (Compiler.SymbolTable.ContainsKey(varName))
             {
-                Compiler.errors += 1;
-                Console.WriteLine("variable already declared");
+                Compiler.ReportError(linenum, "variable already declared");
                 return;
             }
             Compiler.SymbolTable[varName] = type;
@@ -145,11 +146,10 @@ namespace mini_compiler
                     break;
                 default:
                     Console.WriteLine($"unrecognized type {node.ExpOutType}");
-                    //TO DO: should errors++?
                     return;
             }
 
-            Compiler.PullStack(node.name);
+            Compiler.PullStack(linenum, node.name);
         }
 
         public override void СheckType() => node.СheckType();
@@ -160,11 +160,12 @@ namespace mini_compiler
         Node condition;
         AST body;
         AST elsebody;
-        public IfNode(Node condition, AST body, AST elsebody = null)
+        public IfNode(Node condition, AST body, AST elsebody = null, int linenum = -1)
         {
             this.condition = condition;
             this.body = body;
             this.elsebody = elsebody;
+            base.linenum = linenum;
         }
 
         public override void GenCode()
@@ -188,10 +189,8 @@ namespace mini_compiler
             elsebody?.СheckType();
 
             if (condition.ExpOutType != IdentType.Bool)
-            {
-                Compiler.errors += 1;
-                Console.WriteLine($"Semantic Error: Expected bool expression, got {condition.ExpOutType}");
-            }
+                Compiler.ReportError(linenum, $"Semantic Error: Expected bool expression, got {condition.ExpOutType}");
+            
         }
     }
 
@@ -199,10 +198,11 @@ namespace mini_compiler
     {
         Node condition;
         AST body;
-        public WhileNode(Node condition, AST body)
+        public WhileNode(Node condition, AST body, int linenum)
         {
             this.condition = condition;
             this.body = body;
+            base.linenum = linenum;
         }
 
         public override void GenCode()
@@ -224,10 +224,7 @@ namespace mini_compiler
             body.СheckType();
 
             if (condition.ExpOutType != IdentType.Bool)
-            {
-                Compiler.errors += 1;
-                Console.WriteLine($"Semantic Error: Expected bool expression, got {condition.ExpOutType}");
-            }
+                Compiler.ReportError(linenum, $"Semantic Error: Expected bool expression, got {condition.ExpOutType}");
         }
     }
 

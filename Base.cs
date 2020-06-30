@@ -40,6 +40,7 @@ namespace mini_compiler
 
     public abstract class Node : AST
     {
+        public Node(int linenum) => base.linenum = linenum;
         public abstract IdentType ExpOutType { get; }
     }
 
@@ -47,7 +48,7 @@ namespace mini_compiler
     {
         Constant value;
 
-        public LeafValNode(Constant con) => value = con;
+        public LeafValNode(Constant con, int linenum) : base(linenum) { value = con; }
 
         public override void GenCode() => value.PushStack();
 
@@ -64,16 +65,16 @@ namespace mini_compiler
         public string name;
         public IdentType exp_out_type;
 
-        public LeafVarNode(string name) => this.name = name;
+        public LeafVarNode(string name, int linenum) : base(linenum) => this.name = name;
 
-        public override void GenCode() => Compiler.PushStack(name);
+        public override void GenCode() => Compiler.PushStack(linenum, name);
 
         public override IdentType ExpOutType => exp_out_type;
 
         public override void СheckType()
         {
             if (!Compiler.SymbolTable.ContainsKey(name))
-                Compiler.ReportError("undeclared variable");
+                Compiler.ReportError(linenum, "undeclared variable");
             else
                 exp_out_type = Compiler.SymbolTable[name];
         }
@@ -86,13 +87,13 @@ namespace mini_compiler
         protected IdentType exp_out_type;
         protected string error_msg { get => $"Semantic Error: Invalid type {op} {exp.ExpOutType}"; }
 
-        public UnaryNode(Node exp, string op)
+        public UnaryNode(Node exp, string op, int linenum) : base(linenum)
         {
             this.exp = exp;
             this.op = op;
         }
 
-        public void ReportError() => Compiler.ReportError(error_msg);
+        public void ReportError() => Compiler.ReportError(linenum, error_msg);
 
         public override void GenCode()
         {
@@ -114,7 +115,7 @@ namespace mini_compiler
         protected string error_msg { get => $"Semantic Error: Invalid type {left.ExpOutType} {op} {right.ExpOutType}"; }
 
         public override IdentType ExpOutType => exp_out_type;
-        public BinaryNode(Node left, string op, Node right)
+        public BinaryNode(Node left, string op, Node right, int linenum) : base(linenum)
         {
             this.left = left;
             this.op = op;
@@ -122,7 +123,7 @@ namespace mini_compiler
         }
         public void ReportError()
         {
-           Compiler.ReportError(error_msg);
+           Compiler.ReportError(linenum, error_msg);
         }
 
         public override void GenCode()
