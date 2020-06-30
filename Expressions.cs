@@ -33,22 +33,22 @@ namespace mini_compiler
             else
                 left.GenCode();
 
-            if(right_convert)
+            if (right_convert)
                 right.GenDoubleCode();
             else
                 right.GenCode();
 
             Compiler.EmitCode(op);
         }
-        //public override string ExpOutType => exp_out_type;
+
         public override void СheckType()
         {
-
             left.СheckType();
             right.СheckType();
 
             if (left.ExpOutType == "bool" || right.ExpOutType == "bool")
                 ReportError();
+
             else if (left.ExpOutType == "float64" || right.ExpOutType == "float64")
             {
                 exp_out_type = "float64";
@@ -89,13 +89,13 @@ namespace mini_compiler
         }
 
         public override string ExpOutType => "bool";
+
         public override void СheckType()
         {
-
             left.СheckType();
             right.СheckType();
 
-            if((left.ExpOutType == "bool" && right.ExpOutType != "bool") || (left.ExpOutType != "bool" && right.ExpOutType == "bool"))
+            if ((left.ExpOutType == "bool" && right.ExpOutType != "bool") || (left.ExpOutType != "bool" && right.ExpOutType == "bool"))
                 ReportError();
 
             if ((left.ExpOutType == "bool" || right.ExpOutType == "bool") && (op != "ceq"))
@@ -128,13 +128,13 @@ namespace mini_compiler
         public override void GenCode()
         {
             var label = $"L{Compiler.label_num++}";
+
             left.GenCode();
             Compiler.EmitCode("dup");
             if (op == "and")
                 Compiler.EmitCode($"brfalse {label}");
             else if (op == "or")
                 Compiler.EmitCode($"brtrue {label}");
-
             right.GenCode();
             Compiler.EmitCode(op);
             Compiler.EmitCode($"{label}:");
@@ -146,15 +146,76 @@ namespace mini_compiler
 
     #region Unary Operators
 
+    public class Assign : Node
+    {
+        string left_ident;
+        Node right_node;
+        bool covert = false;
+        public Assign(string to, Node node)
+        {
+            left_ident = to;
+            right_node = node;
+        }
+
+        public override string ExpOutType => Compiler.IdentTypeMap[Compiler.SymbolTable[left_ident]];
+
+        public override void GenCode()
+        {
+            if (covert)
+                right_node.GenDoubleCode();
+            else
+                right_node.GenCode();
+
+            Compiler.EmitCode("dup");
+            Compiler.PullStack(left_ident);
+        }
+
+        public override void СheckType()
+        {
+            right_node.СheckType();
+
+            if (!Compiler.SymbolTable.ContainsKey(left_ident))
+            {
+                Compiler.errors += 1;
+                Console.WriteLine("undeclared variable");
+                return;
+            }
+
+            IdentType assigntTo = Compiler.SymbolTable[left_ident];
+            string assigntFrom = right_node.ExpOutType;
+            if (assigntTo == IdentType.Double)
+            {
+                if (assigntFrom == "bool")
+                {
+                    Compiler.errors += 1;
+                    Console.WriteLine("Semantic Error: Expected int or double for assigment, got bool");
+                }
+                else
+                    covert = true;
+            }
+            else if (assigntTo == IdentType.Int && assigntFrom != "int32")
+            {
+                Compiler.errors += 1;
+                Console.WriteLine($"Semantic Error: Expected int for assigment, got {assigntFrom}");
+            }
+            else if (assigntTo == IdentType.Bool && assigntFrom != "bool")
+            {
+                Compiler.errors += 1;
+                Console.WriteLine($"Semantic Error: Expected bool for assigment, got {assigntFrom}");
+            }
+        }
+    }
+
     public class UnaryMinus : UnaryNode
     {
         public UnaryMinus(Node exp, string op) : base(exp, op) { }
+
         public override void СheckType()
         {
             base.СheckType();
-
             if (exp.ExpOutType == "bool")
                 ReportError();
+
             exp_out_type = exp.ExpOutType;
         }
         public override string ExpOutType => exp.ExpOutType;
@@ -163,6 +224,7 @@ namespace mini_compiler
     public class BitNegation : UnaryNode
     {
         public BitNegation(Node exp, string op) : base(exp, op) { }
+
         public override void СheckType()
         {
             base.СheckType();
@@ -176,6 +238,7 @@ namespace mini_compiler
     public class LogicNegation : UnaryNode
     {
         public LogicNegation(Node exp, string op) : base(exp, op) { }
+
         public override void СheckType()
         {
             base.СheckType();
@@ -189,6 +252,7 @@ namespace mini_compiler
             Compiler.EmitCode("ldc.i4 0");
             Compiler.EmitCode(op);
         }
+
         public override string ExpOutType => "bool";
     }
 
@@ -210,7 +274,7 @@ namespace mini_compiler
                     Compiler.EmitCode("conv.i4");
                     break;
                 case "float64":
-                    Compiler.EmitCode("conv.i4"); //TO DO:
+                    Compiler.EmitCode("conv.i4");
                     break;
             }
         }
@@ -231,10 +295,10 @@ namespace mini_compiler
             switch (exp.ExpOutType)
             {
                 case "int32":
-                    Compiler.EmitCode("conv.r8"); //TO DO:
+                    Compiler.EmitCode("conv.r8");
                     break;
                 case "bool":
-                    Compiler.EmitCode("conv.r8"); //TO DO:
+                    Compiler.EmitCode("conv.r8");
                     break;
                 case "float64":
                     break;

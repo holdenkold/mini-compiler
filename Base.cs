@@ -44,11 +44,13 @@ namespace mini_compiler
     public abstract class Node : AST
     {
         public abstract string ExpOutType { get; }
+
         public void GenDoubleCode()
         {
             GenCode();
             Compiler.EmitCode("conv.r8");
         }
+
         public void GenIntCode()
         {
             GenCode();
@@ -56,25 +58,11 @@ namespace mini_compiler
         }
     }
 
-    public class ReturnNode : AST
-    {
-        public override void GenCode()
-        {
-            Compiler.EmitCode("leave EndMain");
-        }
-
-        public override void СheckType()
-        {
-            return;
-        }
-    }
     public class LeafValNode : Node
     {
         Constant value;
-        public LeafValNode(Constant con)
-        {
-            value = con;
-        }
+
+        public LeafValNode(Constant con) => value = con;
 
         public override void GenCode() => value.PushStack();
 
@@ -90,12 +78,10 @@ namespace mini_compiler
     {
         public string name;
         public string exp_out_type = null;
-        public LeafVarNode(string name)
-        {
-            this.name = name;
-        }
 
-        public override void GenCode() => Compiler.PushStack(name); // Compiler.EmitCode($"ldloc {name}");
+        public LeafVarNode(string name) => this.name = name;
+
+        public override void GenCode() => Compiler.PushStack(name);
 
         public override string ExpOutType => exp_out_type;
 
@@ -135,17 +121,12 @@ namespace mini_compiler
         public override void GenCode()
         {
             exp.GenCode();
-            //Compiler.EmitCode("ldc.i4 0");
             Compiler.EmitCode(op);
         }
 
-        public override void СheckType()
-        {
-            exp.СheckType();
-        }
+        public override void СheckType() => exp.СheckType();
 
         public override string ExpOutType => exp_out_type;
-
     }
 
     public abstract class BinaryNode : Node
