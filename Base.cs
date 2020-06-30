@@ -1,7 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 namespace mini_compiler
 {
@@ -43,66 +40,18 @@ namespace mini_compiler
 
     public abstract class Node : AST
     {
-        public abstract string ExpOutType { get; }
-        public void GenDoubleCode()
-        {
-            GenCode();
-            Compiler.EmitCode("conv.r8");
-        }
-        public void GenIntCode()
-        {
-            GenCode();
-            Compiler.EmitCode("conv.i4");
-        }
-    }
-
-    public class Program : AST
-    {
-        List<AST> declarations;
-        List<AST> statements;
-        public Program(List<AST> decl, List<AST> stmt)
-        {
-            declarations = decl;
-            statements = stmt;
-        }
-
-        public override void GenCode()
-        {
-            declarations.ForEach(d => d.GenCode());
-            statements.ForEach(s => s.GenCode());
-        }
-
-        public override void СheckType()
-        {
-            declarations.ForEach(d => d.СheckType());
-            statements.ForEach(s => s.СheckType());
-        }
-    }
-
-    public class ReturnNode : AST
-    {
-        public override void GenCode()
-        {
-            Compiler.EmitCode("leave EndMain");
-        }
-
-        public override void СheckType()
-        {
-            return;
-        }
+        public abstract IdentType ExpOutType { get; }
     }
 
     public class LeafValNode : Node
     {
         Constant value;
-        public LeafValNode(Constant con)
-        {
-            value = con;
-        }
+
+        public LeafValNode(Constant con) => value = con;
 
         public override void GenCode() => value.PushStack();
 
-        public override string ExpOutType => Compiler.IdentTypeMap[value.type];
+        public override IdentType ExpOutType => value.type;
 
         public override void СheckType()
         {
@@ -113,27 +62,20 @@ namespace mini_compiler
     public class LeafVarNode : Node
     {
         public string name;
-        public string exp_out_type = null;
-        public LeafVarNode(string name)
-        {
-            this.name = name;
-        }
+        public IdentType exp_out_type;
 
-        public override void GenCode() => Compiler.PushStack(name); // Compiler.EmitCode($"ldloc {name}");
+        public LeafVarNode(string name) => this.name = name;
 
-        public override string ExpOutType => exp_out_type;
+        public override void GenCode() => Compiler.PushStack(name);
+
+        public override IdentType ExpOutType => exp_out_type;
 
         public override void СheckType()
         {
             if (!Compiler.SymbolTable.ContainsKey(name))
-            {
-                Compiler.errors++;
-                Console.WriteLine("undeclared variable");
-            }
+                Compiler.ReportError("undeclared variable");
             else
-            {
-                exp_out_type = Compiler.IdentTypeMap[Compiler.SymbolTable[name]];
-            }
+                exp_out_type = Compiler.SymbolTable[name];
         }
     }
 
@@ -141,7 +83,7 @@ namespace mini_compiler
     {
         protected Node exp;
         protected string op;
-        protected string exp_out_type;
+        protected IdentType exp_out_type;
         protected string error_msg { get => $"Semantic Error: Invalid type {op} {exp.ExpOutType}"; }
 
         public UnaryNode(Node exp, string op)
@@ -150,26 +92,17 @@ namespace mini_compiler
             this.op = op;
         }
 
-        public void ReportError()
-        {
-            Compiler.errors++;
-            Console.WriteLine(error_msg);
-        }
+        public void ReportError() => Compiler.ReportError(error_msg);
 
         public override void GenCode()
         {
             exp.GenCode();
-            //Compiler.EmitCode("ldc.i4 0");
             Compiler.EmitCode(op);
         }
 
-        public override void СheckType()
-        {
-            exp.СheckType();
-        }
+        public override void СheckType() => exp.СheckType();
 
-        public override string ExpOutType => exp_out_type;
-
+        public override IdentType ExpOutType => exp_out_type;
     }
 
     public abstract class BinaryNode : Node
@@ -177,10 +110,10 @@ namespace mini_compiler
         protected Node right;
         protected Node left;
         protected string op;
-        protected string exp_out_type;
+        protected IdentType exp_out_type;
         protected string error_msg { get => $"Semantic Error: Invalid type {left.ExpOutType} {op} {right.ExpOutType}"; }
 
-        public override string ExpOutType => exp_out_type;
+        public override IdentType ExpOutType => exp_out_type;
         public BinaryNode(Node left, string op, Node right)
         {
             this.left = left;
@@ -189,8 +122,7 @@ namespace mini_compiler
         }
         public void ReportError()
         {
-            Compiler.errors++;
-            Console.WriteLine(error_msg);
+           Compiler.ReportError(error_msg);
         }
 
         public override void GenCode()
@@ -198,6 +130,12 @@ namespace mini_compiler
             left.GenCode();
             right.GenCode();
             Compiler.EmitCode(op);
+        }
+
+        public override void СheckType()
+        {
+            left.СheckType();
+            right.СheckType();
         }
     }
 }

@@ -1,8 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.Remoting.Messaging;
-using System.Text;
+using mini_compiler;
 
 namespace mini_compiler
 {
@@ -10,77 +7,46 @@ namespace mini_compiler
     public class BitExpNode : BinaryNode
     {
         public BitExpNode(Node left, string op, Node right) : base(left, op, right) { }
-        public override string ExpOutType => "int32";
+        public override IdentType ExpOutType => IdentType.Int;
         public override void СheckType()
         {
-            left.СheckType();
-            right.СheckType();
+            base.СheckType();
 
-            if (left.ExpOutType != "int32" || right.ExpOutType != "int32")
+            if (left.ExpOutType != IdentType.Int || right.ExpOutType != IdentType.Int)
                 ReportError();
         }
     }
 
     public class ArithmeticExpNode : BinaryNode
     {
-        bool right_convert = false;
-        bool left_convert = false;
         public ArithmeticExpNode(Node left, string op, Node right) : base(left, op, right) { }
-        public override void GenCode()
-        {
-            if (left_convert)
-                left.GenDoubleCode();
-            else
-                left.GenCode();
-
-            if(right_convert)
-                right.GenDoubleCode();
-            else
-                right.GenCode();
-
-            Compiler.EmitCode(op);
-        }
-        //public override string ExpOutType => exp_out_type;
         public override void СheckType()
         {
+            base.СheckType();
 
-            left.СheckType();
-            right.СheckType();
-
-            if (left.ExpOutType == "bool" || right.ExpOutType == "bool")
+            if (left.ExpOutType == IdentType.Bool || right.ExpOutType == IdentType.Bool)
                 ReportError();
-            else if (left.ExpOutType == "float64" || right.ExpOutType == "float64")
+
+            else if (left.ExpOutType == IdentType.Double || right.ExpOutType == IdentType.Double)
             {
-                exp_out_type = "float64";
-                if (left.ExpOutType == "int32")
-                    left_convert = true;
-                if (right.ExpOutType == "int32")
-                    right_convert = true;
+                exp_out_type = IdentType.Double;
+                if (left.ExpOutType == IdentType.Int)
+                    left = new Convert(left, IdentType.Double);
+                if (right.ExpOutType == IdentType.Int)
+                    right = new Convert(right, IdentType.Double);
             }
             else
-                exp_out_type = "int32";
+                exp_out_type = IdentType.Int;
         }
     }
 
     public class RelationalExpNode : BinaryNode
     {
         bool eq;
-        bool right_convert = false;
-        bool left_convert = false;
         public RelationalExpNode(Node left, string op, Node right, bool eq = false) : base(left, op, right) { this.eq = eq; }
         public override void GenCode()
         {
-            if (left_convert)
-                left.GenDoubleCode();
-            else
-                left.GenCode();
-
-            if (right_convert)
-                right.GenDoubleCode();
-            else
-                right.GenCode();
-
-            Compiler.EmitCode(op);
+            base.GenCode();
             if (eq)
             {
                 Compiler.EmitCode("ldc.i4.0");
@@ -88,53 +54,51 @@ namespace mini_compiler
             }
         }
 
-        public override string ExpOutType => "bool";
+        public override IdentType ExpOutType => IdentType.Bool;
+
         public override void СheckType()
         {
+            base.СheckType();
 
-            left.СheckType();
-            right.СheckType();
-
-            if((left.ExpOutType == "bool" && right.ExpOutType != "bool") || (left.ExpOutType != "bool" && right.ExpOutType == "bool"))
+            if ((left.ExpOutType == IdentType.Bool && right.ExpOutType != IdentType.Bool) || (left.ExpOutType != IdentType.Bool && right.ExpOutType == IdentType.Bool))
                 ReportError();
 
-            if ((left.ExpOutType == "bool" || right.ExpOutType == "bool") && (op != "ceq"))
+            if ((left.ExpOutType == IdentType.Bool || right.ExpOutType == IdentType.Bool) && (op != "ceq"))
                 ReportError();
-            else if (left.ExpOutType == "float64" || right.ExpOutType == "float64")
+            else if (left.ExpOutType == IdentType.Double || right.ExpOutType == IdentType.Double)
             {
-                exp_out_type = "float64";
-                if (left.ExpOutType == "int32")
-                    left_convert = true;
-                if (right.ExpOutType == "int32")
-                    right_convert = true;
+                exp_out_type = IdentType.Double;
+                if (left.ExpOutType == IdentType.Int)
+                    left = new Convert(left, IdentType.Double);
+                if (right.ExpOutType == IdentType.Int)
+                    right = new Convert(right, IdentType.Double);
             }
             else
-                exp_out_type = "int32";
+                exp_out_type = IdentType.Int;
         }
     }
 
     public class LogicalExpNode : BinaryNode
     {
         public LogicalExpNode(Node left, string op, Node right) : base(left, op, right) { }
-        public override string ExpOutType => "bool";
+        public override IdentType ExpOutType => IdentType.Bool;
         public override void СheckType()
         {
-            left.СheckType();
-            right.СheckType();
+            base.СheckType();
 
-            if (left.ExpOutType != "bool" || right.ExpOutType != "bool")
+            if (left.ExpOutType != IdentType.Bool || right.ExpOutType != IdentType.Bool)
                 ReportError();
         }
         public override void GenCode()
         {
-            var label = $"L{Compiler.label_num++}";
+            var label = Compiler.GetLabel;
+
             left.GenCode();
             Compiler.EmitCode("dup");
             if (op == "and")
                 Compiler.EmitCode($"brfalse {label}");
             else if (op == "or")
                 Compiler.EmitCode($"brtrue {label}");
-
             right.GenCode();
             Compiler.EmitCode(op);
             Compiler.EmitCode($"{label}:");
@@ -143,43 +107,118 @@ namespace mini_compiler
 
     #endregion
 
+    public class Assign : Node
+    {
+        string left_ident;
+        Node right_node;
+        public Assign(string to, Node node)
+        {
+            left_ident = to;
+            right_node = node;
+        }
+
+        public override IdentType ExpOutType => Compiler.SymbolTable[left_ident];
+
+        public override void GenCode()
+        {
+            right_node.GenCode();
+
+            Compiler.EmitCode("dup");
+            Compiler.PullStack(left_ident);
+        }
+
+        public override void СheckType()
+        {
+            right_node.СheckType();
+
+            if (!Compiler.SymbolTable.ContainsKey(left_ident))
+            {
+                Compiler.ReportError("undeclared variable"); 
+                return; //?
+            }
+
+            IdentType assigntTo = Compiler.SymbolTable[left_ident];
+            var assigntFrom = right_node.ExpOutType;
+            if (assigntTo == IdentType.Double)
+            {
+                if (assigntFrom == IdentType.Bool)
+                    Compiler.ReportError("Semantic Error: Expected int or double for assigment, got bool");
+                else
+                    right_node = new Convert(right_node, IdentType.Double);
+            }
+            else if (assigntTo == IdentType.Int && assigntFrom != IdentType.Int)
+                Compiler.ReportError($"Semantic Error: Expected int for assigment, got {assigntFrom}");
+            else if (assigntTo == IdentType.Bool && assigntFrom != IdentType.Bool)
+                Compiler.ReportError($"Semantic Error: Expected bool for assigment, got {assigntFrom}");
+           
+            }
+        }
+    }
+    public class Convert : Node
+    {
+        Node exp;
+        IdentType typeTo;
+        public Convert(Node exp, IdentType type_to)
+        {
+            this.exp = exp;
+            typeTo = type_to;
+        }
+
+        public override IdentType ExpOutType => typeTo;
+
+        public override void GenCode()
+        {
+            exp.GenCode();
+            if (exp.ExpOutType != typeTo)
+            {
+                if (typeTo == IdentType.Int)
+                    Compiler.EmitCode("conv.i4");
+                else if (typeTo == IdentType.Double)
+                    Compiler.EmitCode("conv.r8");
+            }
+        }
+
+        public override void СheckType() => exp.СheckType();
+    }
 
     #region Unary Operators
-
     public class UnaryMinus : UnaryNode
     {
         public UnaryMinus(Node exp, string op) : base(exp, op) { }
+
         public override void СheckType()
         {
             base.СheckType();
-
-            if (exp.ExpOutType == "bool")
+            if (exp.ExpOutType == IdentType.Bool)
                 ReportError();
+
             exp_out_type = exp.ExpOutType;
         }
-        public override string ExpOutType => exp.ExpOutType;
+        public override IdentType ExpOutType => exp.ExpOutType;
     }
 
     public class BitNegation : UnaryNode
     {
         public BitNegation(Node exp, string op) : base(exp, op) { }
+
         public override void СheckType()
         {
             base.СheckType();
-            if (exp.ExpOutType != "int32")
+            if (exp.ExpOutType != IdentType.Int)
                 ReportError();
         }
 
-        public override string ExpOutType => "int32";
+        public override IdentType ExpOutType => IdentType.Int;
     }
 
     public class LogicNegation : UnaryNode
     {
         public LogicNegation(Node exp, string op) : base(exp, op) { }
+
         public override void СheckType()
         {
             base.СheckType();
-            if (exp.ExpOutType != "bool")
+            if (exp.ExpOutType != IdentType.Bool)
                 ReportError();
         }
 
@@ -189,62 +228,9 @@ namespace mini_compiler
             Compiler.EmitCode("ldc.i4 0");
             Compiler.EmitCode(op);
         }
-        public override string ExpOutType => "bool";
-    }
 
-    public class ConvertToInt : Node
-    {
-        Node exp;
-        public ConvertToInt(Node exp) => this.exp = exp;
-
-        public override string ExpOutType => "int32";
-
-        public override void GenCode()
-        {
-            exp.GenCode();
-            switch (exp.ExpOutType)
-            {
-                case "int32":
-                    break;
-                case "bool":
-                    Compiler.EmitCode("conv.i4");
-                    break;
-                case "float64":
-                    Compiler.EmitCode("conv.i4"); //TO DO:
-                    break;
-            }
-        }
-
-        public override void СheckType() => exp.СheckType();
-    }
-
-    public class ConvertToDouble : Node
-    {
-        Node exp;
-        public ConvertToDouble(Node exp) => this.exp = exp;
-
-        public override string ExpOutType => "float64";
-
-        public override void GenCode()
-        {
-            exp.GenCode();
-            switch (exp.ExpOutType)
-            {
-                case "int32":
-                    Compiler.EmitCode("conv.r8"); //TO DO:
-                    break;
-                case "bool":
-                    Compiler.EmitCode("conv.r8"); //TO DO:
-                    break;
-                case "float64":
-                    break;
-            }
-        }
-
-        public override void СheckType() => exp.СheckType();
+        public override IdentType ExpOutType => IdentType.Bool;
     }
 
     #endregion
 
-
-}

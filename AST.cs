@@ -1,13 +1,5 @@
-﻿using QUT.Gppg;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.IO;
-using System.Linq;
-using System.Runtime.Remoting.Messaging;
-using System.Security.Permissions;
-using System.Xml.Schema;
 
 namespace mini_compiler
 {
@@ -32,10 +24,6 @@ namespace mini_compiler
             switch (type)
             {
                 case IdentType.Int:
-                    Compiler.EmitCode($".locals init ( int32 v_{varName} )"); //declare
-                    Compiler.EmitCode("ldc.i4.0"); //pushing 0 on stack
-                    Compiler.PullStack(varName); //initialisation variable with 0 (linking varName with last value on stack)
-                    break;
                 case IdentType.Bool:
                     Compiler.EmitCode($".locals init ( int32 v_{varName} )"); //declare
                     Compiler.EmitCode("ldc.i4.0"); //pushing 0 on stack
@@ -64,10 +52,7 @@ namespace mini_compiler
     public class ExpStmt : AST
     {
         AST stmt;
-        public ExpStmt(AST stmt)
-        {
-            this.stmt = stmt;
-        }
+        public ExpStmt(AST stmt) => this.stmt = stmt;
 
         public override void GenCode()
         {
@@ -78,128 +63,53 @@ namespace mini_compiler
         public override void СheckType() => stmt.СheckType();
     }
 
-    public class Assign : Node
-    {
-        string left_ident;
-        Node right_node;
-        bool covert = false;
-        public Assign(string to, Node node)
-        {
-            left_ident = to;
-            right_node = node;
-        }
-
-        public override string ExpOutType => Compiler.IdentTypeMap[Compiler.SymbolTable[left_ident]];
-
-        public override void GenCode()
-        {
-            if (covert)
-                right_node.GenDoubleCode();
-            else
-                right_node.GenCode();
-
-            Compiler.EmitCode("dup");
-            Compiler.PullStack(left_ident);
-            //Compiler.PushStack(left_ident); // push on stack assigned value 
-        }
-
-        public override void СheckType()
-        {
-            right_node.СheckType();
-
-            if (!Compiler.SymbolTable.ContainsKey(left_ident))
-            {
-                Compiler.errors += 1;
-                Console.WriteLine("undeclared variable");
-                return;
-            }
-
-            IdentType assigntTo = Compiler.SymbolTable[left_ident];
-            string assigntFrom = right_node.ExpOutType;
-            if (assigntTo == IdentType.Double )
-            {
-                if (assigntFrom == "bool")
-                {
-                    Compiler.errors += 1;
-                    Console.WriteLine("Semantic Error: Expected int or double for assigment, got bool");
-                }
-                else
-                    covert = true;
-            }
-            else if (assigntTo == IdentType.Int && assigntFrom != "int32")
-            {
-                Compiler.errors += 1;
-                Console.WriteLine($"Semantic Error: Expected int for assigment, got {assigntFrom}");
-            }
-            else if (assigntTo == IdentType.Bool && assigntFrom != "bool")
-            {
-                Compiler.errors += 1;
-                Console.WriteLine($"Semantic Error: Expected bool for assigment, got {assigntFrom}");
-            }
-        }
-    }
-
     public class Block : AST
     {
         List<AST> statements;
         public Block(List<AST> statements) => this.statements = statements;
 
-        public override void GenCode()
-        {
-            if(statements!= null)
-                statements.ForEach(s => s.GenCode());
-        }
+        public override void GenCode() => statements?.ForEach(s => s.GenCode());
 
-        public override void СheckType()
-        {
-            if (statements != null)
-                statements.ForEach(s => s.СheckType());
-        }
+        public override void СheckType() => statements?.ForEach(s => s.СheckType());
     }
 
     public class Write : AST
     {
         Node value;
-        public Write(Node value)
-        {
-            this.value = value;
-            //Compiler.syntaxTree.Add(this);
-        }
+        public Write(Node value) => this.value = value;
 
         public override void GenCode()
         {
-            if (value.ExpOutType == "float64")
+            switch (value.ExpOutType)
             {
+                case IdentType.Double:
+                    Compiler.EmitCode("call class [mscorlib]System.Globalization.CultureInfo [mscorlib]System.Globalization.CultureInfo::get_InvariantCulture()");
+                    Compiler.EmitCode("ldstr \"{0:0.000000}\"");
+                    value.GenCode();
+                    Compiler.EmitCode("box [mscorlib]System.Double");
+                    Compiler.EmitCode("call string [mscorlib]System.String::Format(class [mscorlib]System.IFormatProvider, string, object)");
+                    Compiler.EmitCode("call void [mscorlib]System.Console::Write(string)");
+                    break;
 
-                Compiler.EmitCode("call class [mscorlib]System.Globalization.CultureInfo [mscorlib]System.Globalization.CultureInfo::get_InvariantCulture()");
-                Compiler.EmitCode("ldstr \"{0:0.000000}\"");
-                value.GenCode();
-                Compiler.EmitCode("box [mscorlib]System.Double");
-                Compiler.EmitCode("call string [mscorlib]System.String::Format(class [mscorlib]System.IFormatProvider, string, object)");
-                Compiler.EmitCode("call void [mscorlib]System.Console::Write(string)");
-            }
-            else
-            {
-                value.GenCode();
-                Compiler.EmitCode($"call void [mscorlib]System.Console::Write({value.ExpOutType})");
+                case IdentType.Int:
+                    value.GenCode();
+                    Compiler.EmitCode($"call void [mscorlib]System.Console::Write(int32)");
+                    break;
+
+                case IdentType.Bool:
+                    value.GenCode();
+                    Compiler.EmitCode($"call void [mscorlib]System.Console::Write(bool)");
+                    break;
             }
         }
 
-        public override void СheckType()
-        {
-            value.СheckType();
-        }
+        public override void СheckType() => value.СheckType();
     }
 
     public class WriteString : AST
     {
         string str;
-        public WriteString(string str)
-        {
-            Console.WriteLine($"printing str: {str}");
-            this.str = str;
-            //Compiler.syntaxTree.Add(this);
-        }
+        public WriteString(string str) => this.str = str;
 
         public override void GenCode()
         {
@@ -216,31 +126,33 @@ namespace mini_compiler
     public class Read : AST
     {
         LeafVarNode node;
-        public Read(LeafVarNode node)
-        { 
-            this.node = node;
-            //Compiler.syntaxTree.Add(this);
-        }
+        public Read(LeafVarNode node) => this.node = node;
 
         public override void GenCode()
         {
-            var type = char.ToUpper(node.ExpOutType[0]) + node.ExpOutType.Substring(1); //converting type, for ex: int32 -> Int32
-            if (node.ExpOutType == "bool")
-                type = "Boolean";
-            else if (node.ExpOutType == "float64")
-                type = "Double";
-
             Compiler.EmitCode($"call string [mscorlib]System.Console::ReadLine()");
-            Compiler.EmitCode($"call {node.ExpOutType} [mscorlib]System.{type}::Parse(string)");
-            //Compiler.EmitCode($"stloc {node.name}");
+
+            switch (node.ExpOutType)
+            {
+                case IdentType.Int:
+                    Compiler.EmitCode($"call int32 [mscorlib]System.Int32::Parse(string)");
+                    break;
+                case IdentType.Bool:
+                    Compiler.EmitCode($"call bool [mscorlib]System.Boolean::Parse(string)");
+                    break;
+                case IdentType.Double:
+                    Compiler.EmitCode($"call float64 [mscorlib]System.Double::Parse(string)");
+                    break;
+                default:
+                    Console.WriteLine($"unrecognized type {node.ExpOutType}");
+                    //TO DO: should errors++?
+                    return;
+            }
+
             Compiler.PullStack(node.name);
         }
 
-        public override void СheckType()
-        {
-            node.СheckType();
-            return;
-        }
+        public override void СheckType() => node.СheckType();
     }
 
     public class IfNode : AST
@@ -253,22 +165,19 @@ namespace mini_compiler
             this.condition = condition;
             this.body = body;
             this.elsebody = elsebody;
-           // Compiler.syntaxTree.Add(this);
         }
 
         public override void GenCode()
         {
-            var else_label = $"L{Compiler.label_num++}";
-            var end_if_label = $"L{Compiler.label_num++}";
-            condition.GenCode(); //pushing to stack condition result
-            Compiler.EmitCode($"brfalse {else_label}");
-            body.GenCode();
+            var else_label = Compiler.GetLabel;
+            var end_if_label = Compiler.GetLabel;
+
+            condition.GenCode();                            // pushing to stack condition result
+            Compiler.EmitCode($"brfalse {else_label}");     // IF
+            body.GenCode();                                 // IF BODY
             Compiler.EmitCode($"br {end_if_label}");
-
             Compiler.EmitCode($"{else_label}:");
-            if (elsebody != null)  // ELSE
-                elsebody.GenCode();
-
+            elsebody?.GenCode();                            // ELSE
             Compiler.EmitCode($"{end_if_label}:");
         }
 
@@ -278,13 +187,14 @@ namespace mini_compiler
             body.СheckType();
             elsebody?.СheckType();
 
-            if (condition.ExpOutType != "bool")
+            if (condition.ExpOutType != IdentType.Bool)
             {
                 Compiler.errors += 1;
                 Console.WriteLine($"Semantic Error: Expected bool expression, got {condition.ExpOutType}");
             }
         }
     }
+
     public class WhileNode : AST
     {
         Node condition;
@@ -293,21 +203,19 @@ namespace mini_compiler
         {
             this.condition = condition;
             this.body = body;
-            //Compiler.syntaxTree.Add(this);
         }
 
         public override void GenCode()
         {
-            int while_start = Compiler.label_num++;
-            int while_end = Compiler.label_num++;
+            var while_start = Compiler.GetLabel;
+            var while_end = Compiler.GetLabel;
 
-            Compiler.EmitCode($"L{while_start}:");
-            condition.GenCode(); //pushing to stack condition result
-            Compiler.EmitCode($"brfalse L{while_end}");
-                body.GenCode();
-                Compiler.EmitCode($"br L{while_start}");                
-
-            Compiler.EmitCode($"L{while_end}:");
+            Compiler.EmitCode($"{while_start}:");
+            condition.GenCode();                            // pushing to stack condition result
+            Compiler.EmitCode($"brfalse {while_end}");     // WHILE
+            body.GenCode();                                 // BODY
+            Compiler.EmitCode($"br {while_start}");        // checking the condition one more time
+            Compiler.EmitCode($"{while_end}:");
         }
 
         public override void СheckType()
@@ -315,12 +223,21 @@ namespace mini_compiler
             condition.СheckType();
             body.СheckType();
 
-
-            if (condition.ExpOutType != "bool")
+            if (condition.ExpOutType != IdentType.Bool)
             {
                 Compiler.errors += 1;
                 Console.WriteLine($"Semantic Error: Expected bool expression, got {condition.ExpOutType}");
             }
+        }
+    }
+
+    public class ReturnNode : AST
+    {
+        public override void GenCode() => Compiler.EmitCode("leave EndMain");
+
+        public override void СheckType()
+        {
+            return;
         }
     }
 }

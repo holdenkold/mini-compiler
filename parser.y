@@ -106,8 +106,8 @@ unary_exp
 	: "-" unary_exp {$$ = new UnaryMinus($2, "neg");}
 	| "~" unary_exp {$$ = new BitNegation($2, "not");}
 	| "!" unary_exp {$$ = new LogicNegation($2, "ceq");}
-	| "(" Int ")" unary_exp {$$ = new ConvertToInt($4);}
-	| "(" Double ")" unary_exp {$$ = new ConvertToDouble($4);}
+	| "(" Int ")" unary_exp {$$ = new Convert($4, IdentType.Int);}
+	| "(" Double ")" unary_exp {$$ = new Convert($4, IdentType.Double);}
 	| factor
 	;
 
