@@ -11,10 +11,6 @@ public class Compiler
     public static List<AST> syntaxTree = new List<AST>();
     public static Dictionary<string, IdentType> SymbolTable = new Dictionary<string, IdentType>();
 
-    //public static Dictionary<IdentType, string> IdentTypeMap = new Dictionary<IdentType, string> {
-    //    { IdentType.Int, "int32" }, { IdentType.Double, "float64" }, { IdentType.Bool, "bool" }
-    //};
-
     static int label_num = 0;
     public static string GetLabel => $"L{label_num++}";
 

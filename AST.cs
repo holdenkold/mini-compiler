@@ -177,8 +177,8 @@ namespace mini_compiler
 
         public override void GenCode()
         {
-            var else_label = Compiler.GetLabel; //$"L{Compiler.label_num++}";
-            var end_if_label = Compiler.GetLabel;  //$"L{Compiler.label_num++}";
+            var else_label = Compiler.GetLabel;
+            var end_if_label = Compiler.GetLabel;
 
             condition.GenCode();                            // pushing to stack condition result
             Compiler.EmitCode($"brfalse {else_label}");     // IF
@@ -215,8 +215,8 @@ namespace mini_compiler
 
         public override void GenCode()
         {
-            var while_start = Compiler.GetLabel; //Compiler.label_num++;
-            var while_end = Compiler.GetLabel;  //Compiler.label_num++;
+            var while_start = Compiler.GetLabel; 
+            var while_end = Compiler.GetLabel; 
 
             Compiler.EmitCode($"{while_start}:");
             condition.GenCode();                            // pushing to stack condition result

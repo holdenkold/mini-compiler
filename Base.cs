@@ -93,9 +93,7 @@ namespace mini_compiler
                 Console.WriteLine("undeclared variable");
             }
             else
-            {
                 exp_out_type = Compiler.SymbolTable[name];
-            }
         }
     }
 
@@ -155,6 +153,12 @@ namespace mini_compiler
             left.GenCode();
             right.GenCode();
             Compiler.EmitCode(op);
+        }
+
+        public override void СheckType()
+        {
+            left.СheckType();
+            right.СheckType();
         }
     }
 }

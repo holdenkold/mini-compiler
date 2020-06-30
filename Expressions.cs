@@ -13,8 +13,7 @@ namespace mini_compiler
         public override IdentType ExpOutType => IdentType.Int;
         public override void СheckType()
         {
-            left.СheckType();
-            right.СheckType();
+            base.СheckType();
 
             if (left.ExpOutType != IdentType.Int || right.ExpOutType != IdentType.Int)
                 ReportError();
@@ -43,8 +42,7 @@ namespace mini_compiler
 
         public override void СheckType()
         {
-            left.СheckType();
-            right.СheckType();
+            base.СheckType();
 
             if (left.ExpOutType == IdentType.Bool || right.ExpOutType == IdentType.Bool)
                 ReportError();
@@ -92,8 +90,7 @@ namespace mini_compiler
 
         public override void СheckType()
         {
-            left.СheckType();
-            right.СheckType();
+            base.СheckType();
 
             if ((left.ExpOutType == IdentType.Bool && right.ExpOutType != IdentType.Bool) || (left.ExpOutType != IdentType.Bool && right.ExpOutType == IdentType.Bool))
                 ReportError();
@@ -119,8 +116,7 @@ namespace mini_compiler
         public override IdentType ExpOutType => IdentType.Bool;
         public override void СheckType()
         {
-            left.СheckType();
-            right.СheckType();
+            base.СheckType();
 
             if (left.ExpOutType != IdentType.Bool || right.ExpOutType != IdentType.Bool)
                 ReportError();
@@ -142,9 +138,6 @@ namespace mini_compiler
     }
 
     #endregion
-
-
-    #region Unary Operators
 
     public class Assign : Node
     {
@@ -205,7 +198,34 @@ namespace mini_compiler
             }
         }
     }
+    public class Convert : Node
+    {
+        Node exp;
+        IdentType typeTo;
+        public Convert(Node exp, IdentType type_to)
+        {
+            this.exp = exp;
+            typeTo = type_to;
+        }
 
+        public override IdentType ExpOutType => typeTo;
+
+        public override void GenCode()
+        {
+            exp.GenCode();
+            if (exp.ExpOutType != typeTo)
+            {
+                if (typeTo == IdentType.Int)
+                    Compiler.EmitCode("conv.i4");
+                else if (typeTo == IdentType.Double)
+                    Compiler.EmitCode("conv.r8");
+            }
+        }
+
+        public override void СheckType() => exp.СheckType();
+    }
+
+    #region Unary Operators
     public class UnaryMinus : UnaryNode
     {
         public UnaryMinus(Node exp, string op) : base(exp, op) { }
@@ -256,59 +276,5 @@ namespace mini_compiler
         public override IdentType ExpOutType => IdentType.Bool;
     }
 
-    public class ConvertToInt : Node
-    {
-        Node exp;
-        public ConvertToInt(Node exp) => this.exp = exp;
-
-        public override IdentType ExpOutType => IdentType.Int;
-
-        public override void GenCode()
-        {
-            exp.GenCode();
-            switch (exp.ExpOutType)
-            {
-                case IdentType.Int:
-                    break;
-                case IdentType.Bool:
-                    Compiler.EmitCode("conv.i4");
-                    break;
-                case IdentType.Double:
-                    Compiler.EmitCode("conv.i4");
-                    break;
-            }
-        }
-
-        public override void СheckType() => exp.СheckType();
-    }
-
-    public class ConvertToDouble : Node
-    {
-        Node exp;
-        public ConvertToDouble(Node exp) => this.exp = exp;
-
-        public override IdentType ExpOutType => IdentType.Double;
-
-        public override void GenCode()
-        {
-            exp.GenCode();
-            switch (exp.ExpOutType)
-            {
-                case IdentType.Int:
-                    Compiler.EmitCode("conv.r8");
-                    break;
-                case IdentType.Bool:
-                    Compiler.EmitCode("conv.r8");
-                    break;
-                case IdentType.Double:
-                    break;
-            }
-        }
-
-        public override void СheckType() => exp.СheckType();
-    }
-
     #endregion
-
-
 }
